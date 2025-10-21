@@ -122,6 +122,9 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.coil.gif)
 
+    // BlurHash
+    implementation("com.github.wajahat-iqbal:BlurHashPainter:1.2")
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
