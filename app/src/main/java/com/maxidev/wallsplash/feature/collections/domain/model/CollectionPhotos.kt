@@ -7,10 +7,7 @@ data class CollectionPhotos(
     val id: String,
     val width: Int,
     val height: Int,
-    val color: String,
-    val urlRaw: String,
+    val blurHash: String,
     val urlFull: String,
-    val urlRegular: String,
-    val urlSmall: String,
-    val urlThumb: String
+    val urlRegular: String
 )

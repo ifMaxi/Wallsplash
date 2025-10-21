@@ -1,7 +1,6 @@
 package com.maxidev.wallsplash.feature.favorite.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -29,10 +28,4 @@ interface FavoritesDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhoto(photo: FavoriteEntity)
-
-    /**
-     * Deletes an item in the database.
-     */
-    @Delete
-    suspend fun deletePhoto(photo: FavoriteEntity)
 }

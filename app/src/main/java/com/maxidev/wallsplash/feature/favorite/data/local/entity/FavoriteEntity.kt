@@ -11,5 +11,6 @@ data class FavoriteEntity(
     val id: UUID = UUID.randomUUID(),
     val photo: String,
     val width: Int,
-    val height: Int
+    val height: Int,
+    val blurHash: String
 )

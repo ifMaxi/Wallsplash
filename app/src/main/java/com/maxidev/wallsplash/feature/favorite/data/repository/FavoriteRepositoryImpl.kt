@@ -32,13 +32,6 @@ class FavoriteRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteFromFavorites(photo: Favorites) {
-
-        return withContext(Dispatchers.IO) {
-            dao.deletePhoto(photo.asEntity())
-        }
-    }
-
     override suspend fun deleteSelectedPhotos(photos: List<UUID>) {
 
         return withContext(Dispatchers.IO) {

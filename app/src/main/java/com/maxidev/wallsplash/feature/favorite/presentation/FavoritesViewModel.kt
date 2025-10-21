@@ -3,7 +3,6 @@ package com.maxidev.wallsplash.feature.favorite.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maxidev.wallsplash.feature.favorite.domain.model.Favorites
-import com.maxidev.wallsplash.feature.favorite.domain.usecase.DeletePhotoUseCase
 import com.maxidev.wallsplash.feature.favorite.domain.usecase.DeleteSelectedPhotosUseCase
 import com.maxidev.wallsplash.feature.favorite.domain.usecase.GetFavoritesUseCase
 import com.maxidev.wallsplash.feature.favorite.presentation.mapper.asUi
@@ -19,8 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
-    private val getFavoritesUseCase: GetFavoritesUseCase,
-    private val deletePhotoUseCase: DeletePhotoUseCase,
+    getFavoritesUseCase: GetFavoritesUseCase,
     private val deleteSelectedPhotosUseCase: DeleteSelectedPhotosUseCase
 ) : ViewModel() {
 
@@ -36,11 +34,6 @@ class FavoritesViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5000L),
                 initialValue = FavoriteUiState()
             )
-
-    fun deletePhoto(photo: Favorites) =
-        viewModelScope.launch {
-            deletePhotoUseCase(photo)
-        }
 
     fun deleteSelectedPhotos(photos: List<UUID>) =
         viewModelScope.launch {

@@ -8,7 +8,8 @@ fun FavoriteEntity.asDomain() =
         id = id,
         photo = photo,
         width = width,
-        height = height
+        height = height,
+        blurHash = blurHash
     )
 
 fun Favorites.asEntity() =
@@ -16,5 +17,6 @@ fun Favorites.asEntity() =
         id = id,
         photo = photo,
         width = width,
-        height = height
+        height = height,
+        blurHash = blurHash
     )

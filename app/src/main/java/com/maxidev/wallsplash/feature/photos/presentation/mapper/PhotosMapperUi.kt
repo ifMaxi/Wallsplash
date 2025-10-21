@@ -8,14 +8,9 @@ fun Photos.toUi() =
         id = id,
         width = width,
         height = height,
-        color = color,
         blurHash = blurHash,
-        urlRaw = urlRaw,
         urlFull = urlFull,
         urlRegular = urlRegular,
-        urlSmall = urlSmall,
-        urlThumb = urlThumb,
-        userId = userId,
         name = name,
         profileImageLarge = profileImageLarge
     )

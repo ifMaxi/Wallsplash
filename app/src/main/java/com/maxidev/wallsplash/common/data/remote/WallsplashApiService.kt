@@ -14,6 +14,7 @@ import com.maxidev.wallsplash.feature.collections.data.model.remote.CollectionPh
 import com.maxidev.wallsplash.feature.detail.data.model.remote.PhotoDetailDto
 import com.maxidev.wallsplash.feature.photos.data.model.remote.CollectionsDto
 import com.maxidev.wallsplash.feature.photos.data.model.remote.PhotosDto
+import com.maxidev.wallsplash.feature.search.data.model.remote.SearchCollectionsDto
 import com.maxidev.wallsplash.feature.search.data.model.remote.SearchPhotosDto
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -71,7 +72,7 @@ interface WallsplashApiService {
         @Query("query") query: String,
         @Query("page") page: Int? = PAGE_NUMBER,
         @Query("per_page") perPage: Int? = PER_PAGE
-    )
+    ): SearchCollectionsDto
 
     /**
      * Get a list of collections.

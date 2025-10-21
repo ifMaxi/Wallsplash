@@ -19,10 +19,7 @@ fun CollectionPhotos.asUi() =
         id = id,
         width = width,
         height = height,
-        color = color,
-        urlRaw = urlRaw,
         urlFull = urlFull,
         urlRegular = urlRegular,
-        urlSmall = urlSmall,
-        urlThumb = urlThumb
+        blurHash = blurHash
     )

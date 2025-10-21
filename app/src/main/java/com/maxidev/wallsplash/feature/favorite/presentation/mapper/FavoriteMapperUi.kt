@@ -8,7 +8,8 @@ fun Favorites.asUi() =
         photoId = id,
         photo = photo,
         width = width,
-        height = height
+        height = height,
+        blurHash = blurHash
     )
 
 fun FavoritesUi.asDomain() =
@@ -16,5 +17,6 @@ fun FavoritesUi.asDomain() =
         id = photoId,
         photo = photo,
         width = width,
-        height = height
+        height = height,
+        blurHash = blurHash
     )

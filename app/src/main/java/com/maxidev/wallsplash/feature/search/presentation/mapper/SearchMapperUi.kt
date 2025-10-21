@@ -1,6 +1,8 @@
 package com.maxidev.wallsplash.feature.search.presentation.mapper
 
+import com.maxidev.wallsplash.feature.search.domain.model.SearchCollections
 import com.maxidev.wallsplash.feature.search.domain.model.SearchPhoto
+import com.maxidev.wallsplash.feature.search.presentation.model.SearchCollectionUi
 import com.maxidev.wallsplash.feature.search.presentation.model.SearchPhotoUi
 
 fun SearchPhoto.asUi() =
@@ -9,11 +11,18 @@ fun SearchPhoto.asUi() =
         id = id,
         width = width,
         height = height,
-        color = color,
         blurHash = blurHash,
-        urlRaw = urlRaw,
-        urlFull = urlFull,
-        urlRegular = urlRegular,
-        urlSmall = urlSmall,
-        urlThumb = urlThumb
+        urlRegular = urlRegular
+    )
+
+fun SearchCollections.asUi() =
+    SearchCollectionUi(
+        collectionId = collectionId,
+        id = id,
+        title = title,
+        totalPhotos = "Total photos: $totalPhotos",
+        width = width,
+        height = height,
+        blurHash = blurHash,
+        coverPhoto = coverPhoto,
     )

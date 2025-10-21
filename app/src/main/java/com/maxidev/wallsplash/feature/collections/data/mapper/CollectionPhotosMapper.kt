@@ -21,11 +21,8 @@ fun CollectionPhotosDto.asDomain() =
             id = data.id.orEmpty(),
             width = data.width ?: 0,
             height = data.height ?: 0,
-            color = data.color.orEmpty(),
-            urlRaw = data.urls?.raw.orEmpty(),
+            blurHash = data.blurHash.orEmpty(),
             urlFull = data.urls?.full.orEmpty(),
-            urlRegular = data.urls?.regular.orEmpty(),
-            urlSmall = data.urls?.small.orEmpty(),
-            urlThumb = data.urls?.thumb.orEmpty()
+            urlRegular = data.urls?.regular.orEmpty()
         )
     }

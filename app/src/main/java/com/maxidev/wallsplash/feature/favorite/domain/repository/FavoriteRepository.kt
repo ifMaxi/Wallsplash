@@ -10,7 +10,5 @@ interface FavoriteRepository {
 
     suspend fun saveToFavorite(photo: Favorites)
 
-    suspend fun deleteFromFavorites(photo: Favorites)
-
     suspend fun deleteSelectedPhotos(photos: List<UUID>)
 }

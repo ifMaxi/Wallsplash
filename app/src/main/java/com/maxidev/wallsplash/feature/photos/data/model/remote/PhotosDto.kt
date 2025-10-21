@@ -8,7 +8,6 @@ data class PhotosDto(
     val id: String? = "",
     val width: Int? = 0,
     val height: Int? = 0,
-    val color: String? = "",
     @SerialName("blur_hash")
     val blurHash: String? = "",
     val user: User? = User(),
@@ -16,7 +15,6 @@ data class PhotosDto(
 ) {
     @Serializable
     data class User(
-        val id: String? = "",
         val name: String? = "",
         @SerialName("profile_image")
         val profileImage: ProfileImage? = ProfileImage()
@@ -27,10 +25,7 @@ data class PhotosDto(
 
     @Serializable
     data class Urls(
-        val raw: String? = "",
         val full: String? = "",
-        val regular: String? = "",
-        val small: String? = "",
-        val thumb: String? = ""
+        val regular: String? = ""
     )
 }
