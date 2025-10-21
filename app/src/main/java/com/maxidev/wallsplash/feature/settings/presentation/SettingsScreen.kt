@@ -38,6 +38,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maxidev.wallsplash.feature.settings.datastore.SettingsType
 
+// TODO: Replace github with about.
+
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
@@ -148,7 +150,7 @@ private fun ThemesDialog(
         confirmButton = {
             TextButton(onClick = { onVisibility(false) }) {
                 Text(
-                    text = "Confirm",
+                    text = "Confirm"
                 )
             }
         }
