@@ -165,7 +165,8 @@ private fun ScreenContent(
                                         .copy(
                                             photo = details?.imageRegular.orEmpty(),
                                             width = details?.width ?: 0,
-                                            height = details?.height ?: 0
+                                            height = details?.height ?: 0,
+                                            blurHash = details?.blurHash.orEmpty()
                                         )
                                 )
                             )

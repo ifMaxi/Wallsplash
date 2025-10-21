@@ -5,16 +5,18 @@ package com.maxidev.wallsplash.feature.collections.presentation
 import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,8 +46,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import coil3.compose.AsyncImage
+import com.maxidev.wallsplash.common.presentation.components.CustomAsyncImage
+import com.maxidev.wallsplash.common.utils.handlePagingLoadState
+import com.maxidev.wallsplash.feature.collections.presentation.model.CollectionPhotosUi
 import com.maxidev.wallsplash.feature.collections.presentation.state.CollectionUiState
+import com.wajahatiqbal.blurhash.BlurHashPainter
+
+// TODO: Manage load states.
 
 @Composable
 fun CollectionScreen(
@@ -74,6 +82,9 @@ private fun ScreenContent(
     val topBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
 
+    // Lazy list variables
+    val lazyState = rememberLazyStaggeredGridState()
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -88,19 +99,22 @@ private fun ScreenContent(
             )
         }
     ) { innerPadding ->
-        LazyColumn(
+        LazyVerticalStaggeredGrid(
             modifier = Modifier
                 .fillMaxSize()
                 .consumeWindowInsets(innerPadding),
-            state = rememberLazyListState(),
+            columns = StaggeredGridCells.Adaptive(160.dp),
+            state = lazyState,
             contentPadding = innerPadding
         ) {
-            item {
-                CuratedUserItem(
-                    user = collectionData?.name.orEmpty(),
-                    totalPhotos = collectionData?.totalPhotos.orEmpty(),
-                    link = collectionData?.link.orEmpty()
-                )
+            item(span = StaggeredGridItemSpan.FullLine) {
+                if (collectionData != null) {
+                    CuratedUserItem(
+                        user = collectionData.name,
+                        totalPhotos = collectionData.totalPhotos,
+                        link = collectionData.link
+                    )
+                }
             }
             items(
                 collectionPhotos.itemCount,
@@ -110,33 +124,41 @@ private fun ScreenContent(
 
                 if (photos != null) {
                     PhotoItem(
-                        image = photos.urlRegular,
+                        model = photos,
                         navigateToDetail = { navigateToDetail(photos.id) }
                     )
                 }
             }
+            handlePagingLoadState(
+                loadState = collectionPhotos.loadState,
+                itemCount = collectionPhotos.itemCount
+            )
         }
     }
 }
 
 @Composable
 private fun PhotoItem(
-    image: String,
+    model: CollectionPhotosUi,
     navigateToDetail: () -> Unit
 ) {
-    Box (
+    CustomAsyncImage(
         modifier = Modifier
+            .aspectRatio(model.width.toFloat() / model.height.toFloat())
             .padding(8.dp)
-            .clickable { navigateToDetail() }
-    ){
-        AsyncImage(
-            model = image,
-            contentDescription = null,
-            modifier = Modifier
-                .padding(8.dp)
-                .clip(RoundedCornerShape(10.dp))
-        )
-    }
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { navigateToDetail() },
+        model = model.urlRegular,
+        blurHash =  BlurHashPainter(
+            blurHash = model.blurHash,
+            width = model.width,
+            height = model.height,
+            punch = 0.7f,
+            scale = 0.1f
+        ),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds
+    )
 }
 
 @Composable
@@ -166,15 +188,13 @@ private fun CuratedUserItem(
             onClick = { localContext.startActivity(browserIntent) },
             modifier = Modifier.size(12.dp)
         ) {
-            Icon(
-                Icons.AutoMirrored.Filled.OpenInNew,
-                "View in browser."
-            )
+            Icon(Icons.AutoMirrored.Filled.OpenInNew, "View in browser.")
         }
     }
 }
 
-@[Composable Preview]
+@Preview
+@Composable
 private fun CuratedUserPreview() {
     CuratedUserItem(
         user = "Collection by Lorem impsum",

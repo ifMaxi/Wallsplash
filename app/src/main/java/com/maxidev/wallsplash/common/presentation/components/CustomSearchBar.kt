@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,8 +69,8 @@ fun CustomSearchBar(
 
     Box(
         modifier = modifier
-            .wrapContentHeight(Alignment.Top)
             .fillMaxWidth()
+            .padding(8.dp)
             .imePadding()
             .semantics { isTraversalGroup = false }
     ) {
@@ -77,8 +79,9 @@ fun CustomSearchBar(
                 .align(Alignment.TopCenter)
                 .semantics { traversalIndex = 0f },
             inputField = inputField,
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
+            expanded = false,
+            onExpandedChange = { expanded = false },
+            shape = RoundedCornerShape(10.dp),
             content = content
         )
     }

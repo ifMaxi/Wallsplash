@@ -3,11 +3,14 @@
 package com.maxidev.wallsplash.feature.photos.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +21,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -28,6 +30,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -44,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import coil3.ColorImage
@@ -60,40 +66,51 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
+import com.maxidev.wallsplash.common.presentation.components.CustomAsyncImage
+import com.maxidev.wallsplash.common.utils.handlePagingLoadState
+import com.maxidev.wallsplash.feature.navigation.Destinations
+import com.maxidev.wallsplash.feature.photos.presentation.model.CollectionsUi
+import com.maxidev.wallsplash.feature.photos.presentation.model.PhotosUi
 import com.maxidev.wallsplash.feature.photos.presentation.state.PhotosUiState
+import com.wajahatiqbal.blurhash.BlurHashPainter
 
-@Composable
-fun PhotosScreen(
-    viewModel: PhotosViewModel = hiltViewModel(),
+/* Extension that encapsulates the navigation code. */
+fun NavGraphBuilder.photosDestination(
     navigateToPhotoDetail: (String) -> Unit,
     navigateToCollections: (String) -> Unit,
     navigateToSearch: () -> Unit,
     navigateToFavorites: () -> Unit,
     navigateToSettings: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    composable<Destinations.PhotosView> {
+        val viewModel = hiltViewModel<PhotosViewModel>()
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    ScreenContent(
-        uiState = state,
-        onRefresh = viewModel::refreshAll,
-        navigateToPhotoDetail = navigateToPhotoDetail,
-        navigateToCollections = navigateToCollections,
-        navigateToSearch = navigateToSearch,
-        navigateToFavorites = navigateToFavorites,
-        navigateToSettings = navigateToSettings
-    )
+        ScreenContent(
+            uiState = state,
+            uiEvents = { events ->
+                when (events) {
+                    PhotosUiEvents.NavigateToFavorites -> { navigateToFavorites() }
+                    PhotosUiEvents.NavigateToSearch -> { navigateToSearch() }
+                    PhotosUiEvents.NavigateToSettings -> { navigateToSettings() }
+                    PhotosUiEvents.OnRefresh -> { viewModel.refreshAll() }
+                    is PhotosUiEvents.NavigateToPhotoDetails -> {
+                        navigateToPhotoDetail(events.id)
+                    }
+                    is PhotosUiEvents.NavigateToCollectionDetails -> {
+                        navigateToCollections(events.id)
+                    }
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ScreenContent(
     uiState: PhotosUiState,
-    onRefresh: () -> Unit,
-    navigateToPhotoDetail: (String) -> Unit,
-    navigateToCollections: (String) -> Unit,
-    navigateToSearch: () -> Unit,
-    navigateToFavorites: () -> Unit,
-    navigateToSettings: () -> Unit
+    uiEvents: (PhotosUiEvents) -> Unit
 ) {
     val allPhotos = uiState.photos.collectAsLazyPagingItems()
     val allCollections = uiState.collections.collectAsLazyPagingItems()
@@ -107,9 +124,6 @@ private fun ScreenContent(
     // Separate states for the LazyList to avoid sharing state when switching tabs.
     val photosLazyState = rememberLazyStaggeredGridState()
     val collectionLazyState = rememberLazyStaggeredGridState()
-
-    // TODO: Apply loading/error state.
-    // TODO: Apply OnClick methods.
 
     Scaffold(
         topBar = {
@@ -130,23 +144,14 @@ private fun ScreenContent(
             BottomAppBar(
                 modifier = Modifier.height(70.dp),
                 actions = {
-                    IconButton(onClick = navigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings."
-                        )
+                    IconButton(onClick = { uiEvents(PhotosUiEvents.NavigateToSettings) }) {
+                        Icon(Icons.Default.Settings, "Settings.")
                     }
-                    IconButton(onClick = navigateToFavorites) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "Favorites."
-                        )
+                    IconButton(onClick = { uiEvents(PhotosUiEvents.NavigateToFavorites) }) {
+                        Icon(Icons.Default.Favorite, "Favorites.")
                     }
-                    IconButton(onClick = navigateToSearch) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search."
-                        )
+                    IconButton(onClick = { uiEvents(PhotosUiEvents.NavigateToSearch) }) {
+                        Icon(Icons.Default.Search, "Search.")
                     }
                 }
             )
@@ -157,7 +162,7 @@ private fun ScreenContent(
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
             isRefreshing = isRefreshing,
-            onRefresh = onRefresh,
+            onRefresh = { uiEvents(PhotosUiEvents.OnRefresh) },
             state = pullToRefreshState
         ) {
             val currentState = if (selectedTabIndex == 0) photosLazyState else collectionLazyState
@@ -179,13 +184,19 @@ private fun ScreenContent(
 
                             if (content != null) {
                                 PhotoItem(
-                                    url = content.urlRegular,
-                                    name = content.name,
-                                    profileImageLarge = content.profileImageLarge,
-                                    onClick = { navigateToPhotoDetail(content.id) }
+                                    model = content,
+                                    navigateToPhotoDetail = {
+                                        uiEvents(
+                                            PhotosUiEvents.NavigateToPhotoDetails(content.id)
+                                        )
+                                    }
                                 )
                             }
                         }
+                        handlePagingLoadState(
+                            loadState = allPhotos.loadState,
+                            itemCount = allPhotos.itemCount
+                        )
                     }
                     1 -> {
                         items(
@@ -196,15 +207,19 @@ private fun ScreenContent(
 
                             if (content != null) {
                                 CollectionItem(
-                                    imageUrl = content.urlRegular,
-                                    title = content.title,
-                                    totalPhotos = content.totalPhotos,
-                                    name = content.name,
-                                    profileImage = content.profileImageLarge,
-                                    onClick = { navigateToCollections(content.id) }
+                                    model = content,
+                                    onClick = {
+                                        uiEvents(
+                                            PhotosUiEvents.NavigateToCollectionDetails(content.id)
+                                        )
+                                    }
                                 )
                             }
                         }
+                        handlePagingLoadState(
+                            loadState = allCollections.loadState,
+                            itemCount = allCollections.itemCount
+                        )
                     }
                 }
             }
@@ -213,135 +228,132 @@ private fun ScreenContent(
 }
 
 @Composable
-private fun PhotoItem(
-    url: String,
-    name: String,
-    profileImageLarge: String,
-    onClick: () -> Unit
-) {
-    val paddingSpace = 8.dp
+private fun UserItem(image: String, user: String) {
+    val profileColorPainter = ColorPainter(Color.DarkGray)
+    val roundedCornerShape = RoundedCornerShape(10.dp)
 
-    // TODO: Apply loading color effect to images.
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(paddingSpace)
-            .clickable { onClick() },
-        verticalArrangement = Arrangement.spacedBy(paddingSpace)
+    Row(
+        modifier = Modifier.padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
-        Row(
-            modifier = Modifier.padding(paddingSpace),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(paddingSpace)
-        ) {
-            AsyncImage(
-                model = profileImageLarge,
-                contentDescription = name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-            )
-            Text(
-                text = name,
-                fontSize = 14.sp
-            )
-        }
         AsyncImage(
-            model = url,
-            contentDescription = null,
+            model = image,
+            contentDescription = user,
+            placeholder = profileColorPainter,
+            error = profileColorPainter,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingSpace)
-                .clip(RoundedCornerShape(10.dp))
+                .size(40.dp)
+                .clip(roundedCornerShape)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = roundedCornerShape
+                )
+        )
+        Spacer(Modifier.size(16.dp))
+        Text(
+            text = user,
+            fontSize = 14.sp
         )
     }
 }
 
-@[Composable Preview]
-private fun PhotoItemPreview() {
-    val previewHandler = AsyncImagePreviewHandler {
-        ColorImage(Color.DarkGray.toArgb())
-    }
+@Composable
+private fun PhotoItem(
+    model: PhotosUi,
+    navigateToPhotoDetail: () -> Unit
+) {
+    val modPadding = 8.dp
+    val roundedCornerShape = RoundedCornerShape(10.dp)
+    val blurHolder = BlurHashPainter(
+        blurHash = model.blurHash,
+        width = model.width,
+        height = model.height,
+        punch = 0.7f,
+        scale = 0.1f
+    )
 
-    CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
-        PhotoItem(
-            url = "Image",
-            name = "Lorem Impsum",
-            profileImageLarge = "Image",
-            onClick = {}
+    Column(
+        modifier = Modifier
+            .padding(modPadding)
+            .clickable { navigateToPhotoDetail() },
+        verticalArrangement = Arrangement.spacedBy(modPadding)
+    ) {
+        UserItem(
+            image = model.profileImageLarge,
+            user = model.name
+        )
+        CustomAsyncImage(
+            modifier = Modifier
+                .aspectRatio(model.width.toFloat() / model.height.toFloat())
+                .padding(modPadding)
+                .clip(roundedCornerShape),
+            model = model.urlRegular,
+            blurHash = blurHolder,
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
         )
     }
 }
 
 @Composable
 private fun CollectionItem(
-    imageUrl: String,
-    title: String,
-    totalPhotos: String,
-    name: String,
-    profileImage: String,
+    model: CollectionsUi,
     onClick: () -> Unit
 ) {
-    val shape = RoundedCornerShape(10.dp)
+    val roundedCornerShape = RoundedCornerShape(10.dp)
     val colorWhite = Color.White
-    val paddingSpace = 8.dp
+    val modPadding = 8.dp
+    val blurHolder = BlurHashPainter(
+        blurHash = model.blurHash,
+        width = model.width,
+        height = model.height,
+        punch = 0.7f,
+        scale = 0.1f
+    )
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(paddingSpace)
+            .padding(modPadding)
             .clickable { onClick() },
-        verticalArrangement = Arrangement.spacedBy(paddingSpace)
+        verticalArrangement = Arrangement.spacedBy(modPadding)
     ) {
-        Row(
-            modifier = Modifier.padding(paddingSpace),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(paddingSpace)
-        ) {
-            AsyncImage(
-                model = profileImage,
-                contentDescription = name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-            )
-            Text(
-                text = name,
-                fontSize = 14.sp
-            )
-        }
+        UserItem(
+            image = model.profileImageLarge,
+            user = model.name
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(paddingSpace)
-                .background(color = colorWhite, shape = shape)
+                .padding(modPadding)
+                .background(color = colorWhite, shape = roundedCornerShape)
         ) {
-            AsyncImage(
-                model = imageUrl,
+            CustomAsyncImage(
+                modifier = Modifier
+                    .height(200.dp)
+                    .clip(roundedCornerShape),
+                model = model.urlRegular,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(shape)
+                blurHash = blurHolder
             )
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(paddingSpace),
-                verticalArrangement = Arrangement.spacedBy(paddingSpace)
+                    .padding(modPadding),
+                verticalArrangement = Arrangement.spacedBy(modPadding)
             ) {
                 Text(
-                    text = title,
+                    text = model.title,
                     fontWeight = FontWeight.Medium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     color = colorWhite
                 )
                 Text(
-                    text = totalPhotos,
+                    text = model.totalPhotos,
                     fontWeight = FontWeight.Light,
                     color = colorWhite
                 )
@@ -350,7 +362,49 @@ private fun CollectionItem(
     }
 }
 
-@[Composable Preview]
+/* Preview composables. */
+
+@Preview(showBackground = true)
+@Composable
+private fun UserItemPreview() {
+    val previewHandler = AsyncImagePreviewHandler {
+        ColorImage(Color.DarkGray.toArgb())
+    }
+
+    CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
+        UserItem(
+            image = "",
+            user = "User Impsum"
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PhotoItemPreview() {
+    val previewHandler = AsyncImagePreviewHandler {
+        ColorImage(Color.DarkGray.toArgb())
+    }
+
+    CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
+        PhotoItem(
+            model = PhotosUi(
+                id = "id",
+                name = "Userimpsum",
+                profileImageLarge = "image",
+                urlRegular = "image",
+                blurHash = "blurhash",
+                width = 100,
+                height = 100,
+                urlFull = ""
+            ),
+            navigateToPhotoDetail = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 private fun CollectionItemPreview() {
     val previewHandler = AsyncImagePreviewHandler {
         ColorImage(Color.DarkGray.toArgb())
@@ -358,11 +412,17 @@ private fun CollectionItemPreview() {
 
     CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
         CollectionItem(
-            imageUrl = "image",
-            title = "Lorem impsum.",
-            totalPhotos = "Total photos: 30",
-            name = "Userimpsum",
-            profileImage = "image",
+            model = CollectionsUi(
+                id = "12345",
+                title = "Awesome Collection Title",
+                totalPhotos = "150 photos",
+                width = 200,
+                height = 200,
+                blurHash = "",
+                urlRegular = "url",
+                name = "John Doe",
+                profileImageLarge = "image"
+            ),
             onClick = {}
         )
     }

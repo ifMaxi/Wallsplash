@@ -2,15 +2,18 @@
 
 package com.maxidev.wallsplash.feature.favorite.presentation
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -32,8 +35,8 @@ import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -54,6 +57,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
@@ -61,67 +65,62 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import coil3.compose.AsyncImage
 import com.maxidev.wallsplash.feature.favorite.presentation.model.FavoritesUi
+import com.maxidev.wallsplash.feature.navigation.Destinations
+import com.wajahatiqbal.blurhash.BlurHashPainter
 import java.util.UUID
 
-@Composable
-fun FavoriteScreen(
-    viewModel: FavoritesViewModel = hiltViewModel()
-) {
-    val state by viewModel.favorites.collectAsStateWithLifecycle()
+/* Extension that encapsulates the navigation code. */
+fun NavGraphBuilder.favoriteDestination() {
+    composable<Destinations.FavouritesView> {
+        val viewModel = hiltViewModel<FavoritesViewModel>()
+        val state by viewModel.favorites.collectAsStateWithLifecycle()
 
-    ScreenContent(
-        allFavorites = state.favorites,
-        uiEvents = { events ->
-            when (events) {
-                is FavoritesUiEvents.DeletePhoto -> {}
-                is FavoritesUiEvents.DeleteMorePhotos -> {
-                    viewModel.deleteSelectedPhotos(events.removeMore)
-                }
-            }
-        }
-    )
+        ScreenContent(
+            allFavorites = state.favorites,
+            removePhotos = { viewModel.deleteSelectedPhotos(it) }
+        )
+    }
 }
 
 @Composable
 private fun ScreenContent(
     allFavorites: List<FavoritesUi>,
-    uiEvents: (FavoritesUiEvents) -> Unit
+    removePhotos: (List<UUID>) -> Unit
 ) {
     var activePhotoId by rememberSaveable { mutableStateOf<UUID?>(null) }
     var selectedIds by rememberSaveable { mutableStateOf(setOf<UUID>()) }
     val inSelectionMode = selectedIds.isNotEmpty()
 
+    val roundedCornerShape = RoundedCornerShape(10.dp)
+
     Scaffold(
         floatingActionButton = {
             if (inSelectionMode) {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.tertiaryContainer)
-                ) {
-                    ElevatedButton(
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FilledIconButton(
                         modifier = Modifier.padding(8.dp),
-                        onClick = { selectedIds = emptySet() },
-                        contentPadding = PaddingValues(8.dp)
-                    ) {
-                        Icon(Icons.Default.Close, "Cancel selection.")
-                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                        Text(
-                            text = "Selected photos: ${selectedIds.count()}",
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-
-                    IconButton(
-                        modifier = Modifier.padding(8.dp),
+                        shape = roundedCornerShape,
                         onClick = {
-                            uiEvents(FavoritesUiEvents.DeleteMorePhotos(selectedIds.toList()))
+                            removePhotos(selectedIds.toList())
                             selectedIds = emptySet()
                         }
                     ) {
                         Icon(Icons.Default.DeleteSweep, "Delete selected photos.")
+                    }
+
+                    ElevatedButton(
+                        onClick = { selectedIds = emptySet() },
+                        shape = roundedCornerShape
+                    ) {
+                        Icon(Icons.Default.Close, "Cancel selection.")
+                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                        Text(
+                            text = "${selectedIds.count()}"
+                        )
                     }
                 }
             }
@@ -133,7 +132,9 @@ private fun ScreenContent(
                 .consumeWindowInsets(innerPadding),
             columns = StaggeredGridCells.Adaptive(120.dp),
             state = rememberLazyStaggeredGridState(),
-            contentPadding = innerPadding
+            contentPadding = innerPadding,
+            verticalItemSpacing = 2.dp,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 Text(
@@ -147,9 +148,7 @@ private fun ScreenContent(
                 val selected = selectedIds.contains(index.photoId)
 
                 PhotoItem(
-                    image = index.photo,
-                    width = index.width.toFloat(),
-                    height = index.height.toFloat(),
+                    model = index,
                     inSelectionMode = inSelectionMode,
                     selected = selected,
                     modifier = Modifier
@@ -175,7 +174,7 @@ private fun ScreenContent(
 
         if (activePhotoId != null) {
             FullScreenImageItem(
-                image = allFavorites.first { it.photoId == activePhotoId },
+                model = allFavorites.first { it.photoId == activePhotoId },
                 onDismiss = { activePhotoId = null }
             )
         }
@@ -185,30 +184,54 @@ private fun ScreenContent(
 @Composable
 private fun PhotoItem(
     modifier: Modifier = Modifier,
-    image: String,
-    width: Float,
-    height: Float,
+    model: FavoritesUi,
     inSelectionMode: Boolean,
     selected: Boolean
 ) {
+    val blurHolder = BlurHashPainter(
+        blurHash = model.blurHash,
+        width = model.width,
+        height = model.height,
+        punch = 0.7f,
+        scale = 0.1f
+    )
+
+    /**
+     * Create an animation that expands and contracts when you select one or more images.
+     */
+    val imageScale by animateFloatAsState(
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        targetValue = if (selected) 0.9f else 1f,
+        label = "scale"
+    )
+
     Box(
         modifier = modifier
-            .aspectRatio(ratio = (width / height))
+            .aspectRatio(ratio = (model.width.toFloat() / model.height.toFloat()))
             .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f))
+            .graphicsLayer {
+                // Implement the animation
+                scaleX = imageScale
+                scaleY = imageScale
+            }
     ) {
         AsyncImage(
-            model = image,
+            model = model.photo,
             contentDescription = null,
+            placeholder = blurHolder,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
                 .matchParentSize()
                 .then(
                     if (selected) Modifier
-                        .padding(8.dp)
+                        .padding(4.dp)
+                        .clip(RoundedCornerShape(10.dp))
                     else Modifier
                 )
         )
         if (inSelectionMode) {
-            val icon = if (selected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked
+            val icon =
+                if (selected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked
             val tint =
                 if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f)
 
@@ -226,7 +249,7 @@ private fun PhotoItem(
 
 @Composable
 private fun FullScreenImageItem(
-    image: FavoritesUi,
+    model: FavoritesUi,
     onDismiss: () -> Unit
 ) {
     BoxWithConstraints(
@@ -255,7 +278,7 @@ private fun FullScreenImageItem(
         Scrim(onClose = onDismiss, modifier = Modifier.fillMaxSize())
 
         AsyncImage(
-            model = image.photo,
+            model = model.photo,
             contentDescription = null,
             modifier = Modifier
                 .graphicsLayer(
