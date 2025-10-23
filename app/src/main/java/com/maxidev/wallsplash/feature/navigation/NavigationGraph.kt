@@ -6,8 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.maxidev.wallsplash.feature.collections.presentation.CollectionScreen
-import com.maxidev.wallsplash.feature.detail.presentation.PhotoDetailScreen
+import com.maxidev.wallsplash.feature.collections.presentation.collectionsDestination
+import com.maxidev.wallsplash.feature.detail.presentation.photoDetailDestination
 import com.maxidev.wallsplash.feature.favorite.presentation.favoriteDestination
 import com.maxidev.wallsplash.feature.photos.presentation.photosDestination
 import com.maxidev.wallsplash.feature.search.presentation.searchDestination
@@ -36,14 +36,14 @@ fun NavigationGraph(
             navigateToFavorites = { navController.navigate(Destinations.FavouritesView) },
             navigateToSettings = { navController.navigate(Destinations.PreferencesView) }
         )
-        composable<Destinations.CollectionsView> {
-            CollectionScreen(
-                popBack = { navController.popBackStack() },
-                navigateToDetail = { id ->
-                    navController.navigate(Destinations.PhotoDetailsView(id))
-                }
-            )
-        }
+
+        collectionsDestination(
+            popBack = { navController.popBackStack() },
+            navigateToDetail = { id ->
+                navController.navigate(Destinations.PhotoDetailsView(id))
+            }
+        )
+
         searchDestination(
             navigateToDetail = { id ->
                 navController.navigate(Destinations.PhotoDetailsView(id))
@@ -58,8 +58,7 @@ fun NavigationGraph(
         composable<Destinations.PreferencesView> {
             SettingsScreen()
         }
-        composable<Destinations.PhotoDetailsView> {
-            PhotoDetailScreen()
-        }
+
+        photoDetailDestination()
     }
 }
