@@ -44,29 +44,34 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.maxidev.wallsplash.common.presentation.components.CustomAsyncImage
 import com.maxidev.wallsplash.common.utils.handlePagingLoadState
 import com.maxidev.wallsplash.feature.collections.presentation.model.CollectionPhotosUi
 import com.maxidev.wallsplash.feature.collections.presentation.state.CollectionUiState
+import com.maxidev.wallsplash.feature.navigation.Destinations
 import com.wajahatiqbal.blurhash.BlurHashPainter
 
 // TODO: Manage load states.
 
-@Composable
-fun CollectionScreen(
-    viewModel: CollectionsViewModel = hiltViewModel(),
+/* Extension that encapsulates the navigation code. */
+fun NavGraphBuilder.collectionsDestination(
     popBack: () -> Unit,
     navigateToDetail: (String) -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    composable<Destinations.CollectionsView> {
+        val viewModel = hiltViewModel<CollectionsViewModel>()
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    ScreenContent(
-        uiState = state,
-        popBack = popBack,
-        navigateToDetail = navigateToDetail
-    )
+        ScreenContent(
+            uiState = state,
+            popBack = popBack,
+            navigateToDetail = navigateToDetail
+        )
+    }
 }
 
 @Composable
