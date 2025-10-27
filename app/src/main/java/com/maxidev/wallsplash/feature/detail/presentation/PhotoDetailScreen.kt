@@ -89,13 +89,13 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
+import com.maxidev.wallsplash.common.broadcast.download.AndroidDownloader
 import com.maxidev.wallsplash.feature.detail.presentation.model.PhotoDetailUi
 import com.maxidev.wallsplash.feature.detail.presentation.state.PhotoDetailState
 import com.maxidev.wallsplash.feature.favorite.presentation.model.FavoritesUi
 import com.maxidev.wallsplash.feature.navigation.Destinations
 
 // TODO: Set wallpaper feature
-// TODO: Download feature
 
 /* Extension that encapsulates the navigation code. */
 fun NavGraphBuilder.photoDetailDestination() {
@@ -105,13 +105,7 @@ fun NavGraphBuilder.photoDetailDestination() {
 
         ScreenContent(
             uiState = state,
-            uiEvents = { events ->
-                when (events) {
-                    PhotoDetailUiEvents.OnShare -> {}
-                    PhotoDetailUiEvents.OnDownload -> {}
-                    is PhotoDetailUiEvents.OnSave -> { viewModel.saveToDataBase(events.save) }
-                }
-            }
+            onSave = { viewModel.saveToDataBase(it) }
         )
     }
 }
@@ -119,18 +113,29 @@ fun NavGraphBuilder.photoDetailDestination() {
 @Composable
 private fun ScreenContent(
     uiState: PhotoDetailState,
-    uiEvents: (PhotoDetailUiEvents) -> Unit
+    onSave: (FavoritesUi) -> Unit
 ) {
     val context = LocalContext.current
     val details = uiState.details
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var showSheet by remember { mutableStateOf(false) }
 
+    /* Download content */
+    val downloadImage = AndroidDownloader(context)
+
     /* Intent variables */
     val browserIntent = Intent.ACTION_VIEW
+    val sendIntent = Intent.ACTION_SEND
+    val extrasText = Intent.EXTRA_TEXT
     val intent = Intent(browserIntent, details?.userLink?.toUri())
-
-    // TODO: Fix window insets
+    val sendChooser = Intent.createChooser(
+        Intent().apply {
+            action = sendIntent
+            putExtra(extrasText, details?.imageFull)
+            type = "text/plain"
+        },
+        "Share image."
+    )
 
     Scaffold { innerPadding ->
         if (details != null) {
@@ -159,27 +164,32 @@ private fun ScreenContent(
                             sheetState = sheetState,
                             onDismissRequest = { showSheet = false },
                             onSaveToFavorite = {
-                                uiEvents(
-                                    PhotoDetailUiEvents.OnSave(
-                                        save = FavoritesUi()
-                                            .copy(
-                                                photo = details.imageRegular,
-                                                width = details.width,
-                                                height = details.height,
-                                                blurHash = details.blurHash
-                                            )
-                                    )
+                                onSave(
+                                    FavoritesUi()
+                                        .copy(
+                                            photo = details.imageFull,
+                                            width = details.width,
+                                            height = details.height,
+                                            blurHash = details.blurHash
+                                        )
                                 )
                                 Toast.makeText(context, "Saved to favorites.", Toast.LENGTH_SHORT)
                                     .show()
                             },
-                            onShare = { uiEvents(PhotoDetailUiEvents.OnShare) },
+                            onShare = {
+                                // Activates an intent that allows sharing an image.
+                                context.startActivity(sendChooser)
+                            },
                             onDownload = {
-                                uiEvents(PhotoDetailUiEvents.OnDownload)
-                                Toast.makeText(context, "Downloading...", Toast.LENGTH_SHORT).show()
+                                // Allows the download of the image.
+                                downloadImage.download(url = details.imageFull)
                             },
                             onSetAsWallpaper = { /* TODO: Set as wallp. logic */ },
-                            onUserProfile = { context.startActivity(intent) }
+                            onUserProfile = {
+                                // Triggers an intent that opens the device's default
+                                // browser with the link to the profile.
+                                context.startActivity(intent)
+                            }
                         )
                     }
                 }
