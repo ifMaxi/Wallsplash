@@ -122,19 +122,16 @@ private fun ScreenContent(
     var showSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    /* Download content */
+    /* Download images. */
     val downloadImage = AndroidDownloader(context)
 
-    /* Intent variables */
-    val browserIntent = Intent.ACTION_VIEW
-    val sendIntent = Intent.ACTION_SEND
-    val extrasText = Intent.EXTRA_TEXT
-    val linkIntent = Intent(browserIntent, details?.userLink?.toUri())
+    /* Intents. */
+    val userProfileIntent = Intent(Intent.ACTION_VIEW, details?.userLink?.toUri())
     val shareIntentChooser = Intent.createChooser(
         Intent().apply {
-            action = sendIntent
+            action = Intent.ACTION_SEND
             type = "text/plain"
-            putExtra(extrasText, details?.imageFull)
+            putExtra(Intent.EXTRA_TEXT, details?.imageFull)
         }, "Share image."
     )
 
@@ -185,7 +182,7 @@ private fun ScreenContent(
                                 // Allows the download of the image.
                                 downloadImage.download(url = details.imageFull)
                             },
-                            onSetAsWallpaper = { // TODO: Add permission check.
+                            onSetAsWallpaper = {
                                 scope.launch {
                                     setWallpaper(context, details.imageFull)
                                 }
@@ -193,7 +190,7 @@ private fun ScreenContent(
                             onUserProfile = {
                                 // Triggers an intent that opens the device's default
                                 // browser with the link to the profile.
-                                context.startActivity(linkIntent)
+                                context.startActivity(userProfileIntent)
                             }
                         )
                     }

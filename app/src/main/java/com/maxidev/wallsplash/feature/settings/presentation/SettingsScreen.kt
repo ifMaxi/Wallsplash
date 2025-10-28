@@ -1,7 +1,9 @@
 package com.maxidev.wallsplash.feature.settings.presentation
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -80,12 +83,12 @@ private fun ScreenContent(
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HeaderTitleItem(title = "Settings")
+            HeaderTitleItem(title = "Preferences")
 
             OutlinedCard(
                 modifier = Modifier.padding(16.dp),
                 elevation = CardDefaults.outlinedCardElevation(8.dp),
-                shape = RoundedCornerShape(5)
+                shape = RoundedCornerShape(10.dp)
             ) {
                 ListItem(
                     headlineContent = { Text(text = "Theme") },
@@ -120,6 +123,31 @@ private fun ScreenContent(
                                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                                 contentDescription = "Open GitHub."
                             )
+                        }
+                    }
+                )
+            }
+
+            HeaderTitleItem(title = "Permissions")
+            OutlinedCard(
+                modifier = Modifier.padding(16.dp),
+                elevation = CardDefaults.outlinedCardElevation(8.dp),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                ListItem(
+                    headlineContent = { Text(text = "Notifications") },
+                    trailingContent = {
+                        TextButton(
+                            onClick = {
+                                val intent = Intent(
+                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.fromParts("package", context.packageName, null)
+                                )
+
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Text(text = "Go to settings")
                         }
                     }
                 )
@@ -195,4 +223,14 @@ fun HeaderTitleItem(title: String) {
             modifier = Modifier.padding(vertical = 8.dp)
         )
     }
+}
+
+@Preview
+@Composable
+private fun ScreenContentPreview() {
+    ScreenContent(
+        isDynamic = false,
+        onVisibility = {},
+        updateDynamicTheme = {}
+    )
 }
