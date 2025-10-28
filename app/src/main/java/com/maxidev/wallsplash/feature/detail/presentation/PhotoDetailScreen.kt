@@ -62,6 +62,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,12 +91,12 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
 import com.maxidev.wallsplash.common.broadcast.download.AndroidDownloader
+import com.maxidev.wallsplash.common.wallpaper.setWallpaper
 import com.maxidev.wallsplash.feature.detail.presentation.model.PhotoDetailUi
 import com.maxidev.wallsplash.feature.detail.presentation.state.PhotoDetailState
 import com.maxidev.wallsplash.feature.favorite.presentation.model.FavoritesUi
 import com.maxidev.wallsplash.feature.navigation.Destinations
-
-// TODO: Set wallpaper feature
+import kotlinx.coroutines.launch
 
 /* Extension that encapsulates the navigation code. */
 fun NavGraphBuilder.photoDetailDestination() {
@@ -119,6 +120,7 @@ private fun ScreenContent(
     val details = uiState.details
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var showSheet by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     /* Download content */
     val downloadImage = AndroidDownloader(context)
@@ -127,14 +129,13 @@ private fun ScreenContent(
     val browserIntent = Intent.ACTION_VIEW
     val sendIntent = Intent.ACTION_SEND
     val extrasText = Intent.EXTRA_TEXT
-    val intent = Intent(browserIntent, details?.userLink?.toUri())
-    val sendChooser = Intent.createChooser(
+    val linkIntent = Intent(browserIntent, details?.userLink?.toUri())
+    val shareIntentChooser = Intent.createChooser(
         Intent().apply {
             action = sendIntent
-            putExtra(extrasText, details?.imageFull)
             type = "text/plain"
-        },
-        "Share image."
+            putExtra(extrasText, details?.imageFull)
+        }, "Share image."
     )
 
     Scaffold { innerPadding ->
@@ -173,22 +174,26 @@ private fun ScreenContent(
                                             blurHash = details.blurHash
                                         )
                                 )
-                                Toast.makeText(context, "Saved to favorites.", Toast.LENGTH_SHORT)
+                                Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT)
                                     .show()
                             },
                             onShare = {
                                 // Activates an intent that allows sharing an image.
-                                context.startActivity(sendChooser)
+                                context.startActivity(shareIntentChooser)
                             },
                             onDownload = {
                                 // Allows the download of the image.
                                 downloadImage.download(url = details.imageFull)
                             },
-                            onSetAsWallpaper = { /* TODO: Set as wallp. logic */ },
+                            onSetAsWallpaper = { // TODO: Add permission check.
+                                scope.launch {
+                                    setWallpaper(context, details.imageFull)
+                                }
+                            },
                             onUserProfile = {
                                 // Triggers an intent that opens the device's default
                                 // browser with the link to the profile.
-                                context.startActivity(intent)
+                                context.startActivity(linkIntent)
                             }
                         )
                     }
