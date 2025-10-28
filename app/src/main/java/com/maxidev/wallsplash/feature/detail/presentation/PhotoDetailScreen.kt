@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -53,6 +54,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -135,66 +137,62 @@ private fun ScreenContent(
         }, "Share image."
     )
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        floatingActionButton = {
+            SmallFloatingActionButton(onClick = { showSheet = true }) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardDoubleArrowUp,
+                    contentDescription = "Show details."
+                )
+            }
+        }
+    ) { innerPadding ->
         if (details != null) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .consumeWindowInsets(innerPadding)
             ) {
-                Box {
-                    ImageZoomItem(model = details)
+                ImageZoomItem(model = details)
+            }
 
-                    IconButton(
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                        onClick = { showSheet = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardDoubleArrowUp,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                    }
-
-                    if (showSheet) {
-                        DetailInfoItem(
-                            model = details,
-                            sheetState = sheetState,
-                            onDismissRequest = { showSheet = false },
-                            onSaveToFavorite = {
-                                onSave(
-                                    FavoritesUi()
-                                        .copy(
-                                            photo = details.imageFull,
-                                            width = details.width,
-                                            height = details.height,
-                                            blurHash = details.blurHash
-                                        )
+            if (showSheet) {
+                DetailInfoItem(
+                    model = details,
+                    sheetState = sheetState,
+                    onDismissRequest = { showSheet = false },
+                    onSaveToFavorite = {
+                        onSave(
+                            FavoritesUi()
+                                .copy(
+                                    photo = details.imageFull,
+                                    width = details.width,
+                                    height = details.height,
+                                    blurHash = details.blurHash
                                 )
-                                Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT)
-                                    .show()
-                            },
-                            onShare = {
-                                // Activates an intent that allows sharing an image.
-                                context.startActivity(shareIntentChooser)
-                            },
-                            onDownload = {
-                                // Allows the download of the image.
-                                downloadImage.download(url = details.imageFull)
-                            },
-                            onSetAsWallpaper = {
-                                scope.launch {
-                                    setWallpaper(context, details.imageFull)
-                                }
-                            },
-                            onUserProfile = {
-                                // Triggers an intent that opens the device's default
-                                // browser with the link to the profile.
-                                context.startActivity(userProfileIntent)
-                            }
                         )
+                        Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT)
+                            .show()
+                    },
+                    onShare = {
+                        // Activates an intent that allows sharing an image.
+                        context.startActivity(shareIntentChooser)
+                    },
+                    onDownload = {
+                        // Allows the download of the image.
+                        downloadImage.download(url = details.imageFull)
+                    },
+                    onSetAsWallpaper = {
+                        scope.launch {
+                            setWallpaper(context, details.imageFull)
+                        }
+                    },
+                    onUserProfile = {
+                        // Triggers an intent that opens the device's default
+                        // browser with the link to the profile.
+                        context.startActivity(userProfileIntent)
                     }
-                }
+                )
             }
         }
     }
@@ -204,10 +202,14 @@ private fun ScreenContent(
 
 @Composable
 private fun ImageZoomItem(model: PhotoDetailUi) {
+    val systemTheme = isSystemInDarkTheme()
+    val materialBackgroundColor = MaterialTheme.colorScheme.background
+    val backGroudTheme = if (systemTheme) materialBackgroundColor else materialBackgroundColor
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.Black),
+            .background(color = backGroudTheme),
         contentAlignment = Alignment.Center
     ) {
         // Transformation states for panning, zooming and rotation.
