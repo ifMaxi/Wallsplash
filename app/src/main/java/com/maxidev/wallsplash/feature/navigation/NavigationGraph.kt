@@ -4,14 +4,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.maxidev.wallsplash.feature.collections.presentation.collectionsDestination
 import com.maxidev.wallsplash.feature.detail.presentation.photoDetailDestination
 import com.maxidev.wallsplash.feature.favorite.presentation.favoriteDestination
 import com.maxidev.wallsplash.feature.photos.presentation.photosDestination
 import com.maxidev.wallsplash.feature.search.presentation.searchDestination
-import com.maxidev.wallsplash.feature.settings.presentation.SettingsScreen
+import com.maxidev.wallsplash.feature.settings.presentation.settingsDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +54,7 @@ fun NavigationGraph(
 
         favoriteDestination()
 
-        composable<Destinations.PreferencesView> {
-            SettingsScreen()
-        }
+        settingsDestination()
 
         photoDetailDestination()
     }

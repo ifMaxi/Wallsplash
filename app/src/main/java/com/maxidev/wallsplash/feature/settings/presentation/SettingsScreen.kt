@@ -43,38 +43,41 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.maxidev.wallsplash.R
+import com.maxidev.wallsplash.feature.navigation.Destinations
 import com.maxidev.wallsplash.feature.settings.datastore.SettingsType
 
-@Composable
-fun SettingsScreen(
-    viewModel: SettingsViewModel = hiltViewModel()
-) {
-    val isDialogVisible by viewModel.dialogVisible.collectAsStateWithLifecycle()
-    val isProjectDialogVisible by viewModel.projectDialogVisible.collectAsStateWithLifecycle()
-    val isDynamicTheme by viewModel.isDynamicTheme.collectAsStateWithLifecycle()
-    val isTheme by viewModel.isTheme.collectAsStateWithLifecycle()
+/* Extension that encapsulates the navigation code. */
+fun NavGraphBuilder.settingsDestination() {
+    composable<Destinations.PreferencesView> {
+        val viewModel = hiltViewModel<SettingsViewModel>()
+        val isDialogVisible by viewModel.dialogVisible.collectAsStateWithLifecycle()
+        val isProjectDialogVisible by viewModel.projectDialogVisible.collectAsStateWithLifecycle()
+        val isDynamicTheme by viewModel.isDynamicTheme.collectAsStateWithLifecycle()
+        val isTheme by viewModel.isTheme.collectAsStateWithLifecycle()
 
-    ScreenContent(
-        isDynamic = isDynamicTheme,
-        onVisibility = { viewModel.setDialogVisible(true) },
-        onProjectVisibility = { viewModel.setProjectDialogVisible(true) },
-        updateDynamicTheme = { viewModel.updateDynamicTheme() }
-    )
-
-    if (isDialogVisible) {
-        ThemesDialog(
-            themeState = isTheme,
-            onVisibility = { viewModel.setDialogVisible(false) },
-            updateThemeType = { viewModel.updateTheme(it) }
+        ScreenContent(
+            isDynamic = isDynamicTheme,
+            onVisibility = { viewModel.setDialogVisible(true) },
+            onProjectVisibility = { viewModel.setProjectDialogVisible(true) },
+            updateDynamicTheme = { viewModel.updateDynamicTheme() }
         )
-    }
 
-    if (isProjectDialogVisible) {
-        AboutProjectDialog(onProjectVisibility = { viewModel.setProjectDialogVisible(false) })
+        if (isDialogVisible) {
+            ThemesDialog(
+                themeState = isTheme,
+                onVisibility = { viewModel.setDialogVisible(false) },
+                updateThemeType = { viewModel.updateTheme(it) }
+            )
+        }
+
+        if (isProjectDialogVisible) {
+            AboutProjectDialog(onProjectVisibility = { viewModel.setProjectDialogVisible(false) })
+        }
     }
 }
-
 
 @Composable
 private fun ScreenContent(
