@@ -46,7 +46,7 @@ private fun sendNotification(context: Context) {
     notificationManager.createNotificationChannel(channel)
 
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_launcher_foreground) // TODO: Replace with icon
+        .setSmallIcon(R.mipmap.ic_launcher_foreground)
         .setContentTitle("Wallpaper updated")
         .setContentText("New wallpaper set successfully.")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
