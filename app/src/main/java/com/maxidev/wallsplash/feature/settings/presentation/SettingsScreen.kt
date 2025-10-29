@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -34,26 +36,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.maxidev.wallsplash.R
 import com.maxidev.wallsplash.feature.settings.datastore.SettingsType
-
-// TODO: Replace github with about.
 
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val isDialogVisible by viewModel.dialogVisible.collectAsStateWithLifecycle()
+    val isProjectDialogVisible by viewModel.projectDialogVisible.collectAsStateWithLifecycle()
     val isDynamicTheme by viewModel.isDynamicTheme.collectAsStateWithLifecycle()
     val isTheme by viewModel.isTheme.collectAsStateWithLifecycle()
 
     ScreenContent(
         isDynamic = isDynamicTheme,
         onVisibility = { viewModel.setDialogVisible(true) },
+        onProjectVisibility = { viewModel.setProjectDialogVisible(true) },
         updateDynamicTheme = { viewModel.updateDynamicTheme() }
     )
 
@@ -64,6 +69,10 @@ fun SettingsScreen(
             updateThemeType = { viewModel.updateTheme(it) }
         )
     }
+
+    if (isProjectDialogVisible) {
+        AboutProjectDialog(onProjectVisibility = { viewModel.setProjectDialogVisible(false) })
+    }
 }
 
 
@@ -71,10 +80,15 @@ fun SettingsScreen(
 private fun ScreenContent(
     isDynamic: Boolean,
     onVisibility: (Boolean) -> Unit,
+    onProjectVisibility: (Boolean) -> Unit,
     updateDynamicTheme: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val browserIntent = Intent(Intent.ACTION_VIEW, "https://github.com/ifMaxi".toUri())
+
+    val modPadding = 16.dp
+    val roundedCornerShape = RoundedCornerShape(10.dp)
+    val cardElevation = CardDefaults.outlinedCardElevation(8.dp)
 
     Scaffold { innerPadding ->
         Column(
@@ -86,9 +100,9 @@ private fun ScreenContent(
             HeaderTitleItem(title = "Preferences")
 
             OutlinedCard(
-                modifier = Modifier.padding(16.dp),
-                elevation = CardDefaults.outlinedCardElevation(8.dp),
-                shape = RoundedCornerShape(10.dp)
+                modifier = Modifier.padding(modPadding),
+                elevation = cardElevation,
+                shape = roundedCornerShape
             ) {
                 ListItem(
                     headlineContent = { Text(text = "Theme") },
@@ -114,25 +128,13 @@ private fun ScreenContent(
                         modifier = Modifier.clickable { updateDynamicTheme(!isDynamic) }
                     )
                 }
-                HorizontalDivider()
-                ListItem(
-                    headlineContent = { Text(text = "GitHub") },
-                    trailingContent = {
-                        IconButton(onClick = { context.startActivity(browserIntent) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                                contentDescription = "Open GitHub."
-                            )
-                        }
-                    }
-                )
             }
 
             HeaderTitleItem(title = "Permissions")
             OutlinedCard(
-                modifier = Modifier.padding(16.dp),
-                elevation = CardDefaults.outlinedCardElevation(8.dp),
-                shape = RoundedCornerShape(10.dp)
+                modifier = Modifier.padding(modPadding),
+                elevation = cardElevation,
+                shape = roundedCornerShape
             ) {
                 ListItem(
                     headlineContent = { Text(text = "Notifications") },
@@ -147,13 +149,93 @@ private fun ScreenContent(
                                 context.startActivity(intent)
                             }
                         ) {
-                            Text(text = "Go to settings")
+                            Text(text = "Go to settings.")
                         }
                     }
                 )
             }
+
+            HeaderTitleItem(title = "About")
+            OutlinedCard(
+                modifier = Modifier.padding(modPadding),
+                elevation = cardElevation,
+                shape = roundedCornerShape
+            ) {
+                ListItem(
+                    headlineContent = { Text(text = "Project") },
+                    trailingContent = {
+                        IconButton(onClick = { onProjectVisibility(true) }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Description,
+                                contentDescription = "About the project."
+                            )
+                        }
+                    }
+                )
+                HorizontalDivider()
+                ListItem(
+                    headlineContent = { Text(text = "GitHub") },
+                    trailingContent = {
+                        IconButton(onClick = { context.startActivity(browserIntent) }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = "Open GitHub."
+                            )
+                        }
+                    }
+                )
+                HorizontalDivider()
+                ListItem(
+                    headlineContent = { Text(text = "Powered by Unsplash") },
+                    trailingContent = {
+                        IconButton(onClick = { /* TODO: Open Unsplash. */ }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = "Go to Unsplash page."
+                            )
+                        }
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "Made with ♥️ by Maximiliano.",
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
     }
+}
+
+@Composable
+private fun AboutProjectDialog(onProjectVisibility: (Boolean) -> Unit) {
+    val projectDescription = R.string.project_description
+
+    AlertDialog(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        onDismissRequest = { onProjectVisibility(false) },
+        title = {
+            Text(
+                text = "About the project"
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(projectDescription),
+                textAlign = TextAlign.Start
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onProjectVisibility(false) }) {
+                Text(
+                    text = "Dismiss"
+                )
+            }
+        }
+    )
 }
 
 @Composable
@@ -170,7 +252,7 @@ private fun ThemesDialog(
             )
         },
         text = {
-            RadioButtons(
+            ChoseThemeRadioButtons(
                 state = themeState,
                 updateThemeType = updateThemeType
             )
@@ -186,7 +268,7 @@ private fun ThemesDialog(
 }
 
 @Composable
-private fun RadioButtons(
+private fun ChoseThemeRadioButtons(
     state: SettingsUiState,
     updateThemeType: (SettingsType) -> Unit
 ) {
@@ -225,12 +307,15 @@ fun HeaderTitleItem(title: String) {
     }
 }
 
+/* Preview composables. */
+
 @Preview
 @Composable
 private fun ScreenContentPreview() {
     ScreenContent(
         isDynamic = false,
         onVisibility = {},
-        updateDynamicTheme = {}
+        updateDynamicTheme = {},
+        onProjectVisibility = {}
     )
 }

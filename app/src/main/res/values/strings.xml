@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Wallsplash</string>
+    <string name="project_description">
+        Hello, my name is Maximiliano, and I am a software developer specialized in native Android application development.\n\nThe project consists of a simple yet functional wallpaper application, built with Kotlin, Jetpack Compose, and the powerful Unsplash API.\n\nIn addition, it follows Google’s recommended development practices.\n\nThe goal of this project is to test my knowledge and skills, as well as to explore and learn new areas within the Android ecosystem.
+    </string>
 </resources>

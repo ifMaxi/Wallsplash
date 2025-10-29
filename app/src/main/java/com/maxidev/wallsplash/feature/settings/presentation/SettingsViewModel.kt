@@ -18,6 +18,7 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val dialogVisible = MutableStateFlow(false)
+    val projectDialogVisible = MutableStateFlow(false)
 
     val isDynamicTheme: StateFlow<Boolean> =
         dataStore.isDynamicThemeFlow.map { it }
@@ -37,6 +38,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setDialogVisible(value: Boolean) {
         dialogVisible.value = value
+    }
+
+    fun setProjectDialogVisible(value: Boolean) {
+        projectDialogVisible.value = value
     }
 
     fun updateDynamicTheme() {
