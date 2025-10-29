@@ -84,7 +84,9 @@ private fun ScreenContent(
     updateDynamicTheme: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
-    val browserIntent = Intent(Intent.ACTION_VIEW, "https://github.com/ifMaxi".toUri())
+    val actionViewIntent = Intent.ACTION_VIEW
+    val gitHubBrowserIntent = Intent(actionViewIntent, "https://github.com/ifMaxi".toUri())
+    val unsplashBrowserIntent = Intent(actionViewIntent, "https://unsplash.com/developers".toUri())
 
     val modPadding = 16.dp
     val roundedCornerShape = RoundedCornerShape(10.dp)
@@ -176,7 +178,7 @@ private fun ScreenContent(
                 ListItem(
                     headlineContent = { Text(text = "GitHub") },
                     trailingContent = {
-                        IconButton(onClick = { context.startActivity(browserIntent) }) {
+                        IconButton(onClick = { context.startActivity(gitHubBrowserIntent) }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                                 contentDescription = "Open GitHub."
@@ -188,7 +190,7 @@ private fun ScreenContent(
                 ListItem(
                     headlineContent = { Text(text = "Powered by Unsplash") },
                     trailingContent = {
-                        IconButton(onClick = { /* TODO: Open Unsplash. */ }) {
+                        IconButton(onClick = { context.startActivity(unsplashBrowserIntent) }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                                 contentDescription = "Go to Unsplash page."
