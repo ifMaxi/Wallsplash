@@ -123,7 +123,7 @@ dependencies {
     implementation(libs.coil.gif)
 
     // BlurHash
-    implementation("com.github.wajahat-iqbal:BlurHashPainter:1.2")
+    implementation(libs.blurhashpainter)
 
     // Testing
     testImplementation(libs.junit)
