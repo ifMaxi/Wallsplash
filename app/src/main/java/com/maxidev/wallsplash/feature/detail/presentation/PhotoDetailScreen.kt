@@ -93,9 +93,11 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
 import com.maxidev.wallsplash.common.broadcast.download.AndroidDownloader
+import com.maxidev.wallsplash.common.presentation.components.CustomNetworkErrorItem
+import com.maxidev.wallsplash.common.presentation.components.CustomNetworkLoadingItem
+import com.maxidev.wallsplash.common.utils.NetworkResourceUtil
 import com.maxidev.wallsplash.common.wallpaper.setWallpaper
 import com.maxidev.wallsplash.feature.detail.presentation.model.PhotoDetailUi
-import com.maxidev.wallsplash.feature.detail.presentation.state.PhotoDetailState
 import com.maxidev.wallsplash.feature.favorite.presentation.model.FavoritesUi
 import com.maxidev.wallsplash.feature.navigation.Destinations
 import kotlinx.coroutines.launch
@@ -108,21 +110,26 @@ fun NavGraphBuilder.photoDetailDestination() {
 
         ScreenContent(
             uiState = state,
-            onSave = { viewModel.saveToDataBase(it) }
+            onSave = { viewModel.saveToDataBase(it) },
+            onRetry = { viewModel.retryIfNotLoaded() }
         )
     }
 }
 
 @Composable
 private fun ScreenContent(
-    uiState: PhotoDetailState,
-    onSave: (FavoritesUi) -> Unit
+    uiState: NetworkResourceUtil<PhotoDetailUi>,
+    onSave: (FavoritesUi) -> Unit,
+    onRetry: () -> Unit
 ) {
     val context = LocalContext.current
-    val details = uiState.details
+    val details = uiState.data
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var showSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val systemTheme = isSystemInDarkTheme()
+    val materialBackgroundColor = MaterialTheme.colorScheme.background
+    val backGroundTheme = if (systemTheme) materialBackgroundColor else materialBackgroundColor
 
     /* Download images. */
     val downloadImage = AndroidDownloader(context)
@@ -147,52 +154,66 @@ private fun ScreenContent(
             }
         }
     ) { innerPadding ->
-        if (details != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .consumeWindowInsets(innerPadding)
-            ) {
-                ImageZoomItem(model = details)
-            }
-
-            if (showSheet) {
-                DetailInfoItem(
-                    model = details,
-                    sheetState = sheetState,
-                    onDismissRequest = { showSheet = false },
-                    onSaveToFavorite = {
-                        onSave(
-                            FavoritesUi()
-                                .copy(
-                                    photo = details.imageFull,
-                                    width = details.width,
-                                    height = details.height,
-                                    blurHash = details.blurHash
-                                )
-                        )
-                        Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT)
-                            .show()
-                    },
-                    onShare = {
-                        // Activates an intent that allows sharing an image.
-                        context.startActivity(shareIntentChooser)
-                    },
-                    onDownload = {
-                        // Allows the download of the image.
-                        downloadImage.download(url = details.imageFull)
-                    },
-                    onSetAsWallpaper = {
-                        scope.launch {
-                            setWallpaper(context, details.imageFull)
-                        }
-                    },
-                    onUserProfile = {
-                        // Triggers an intent that opens the device's default
-                        // browser with the link to the profile.
-                        context.startActivity(userProfileIntent)
-                    }
+        when (uiState) {
+            is NetworkResourceUtil.Loading -> { CustomNetworkLoadingItem() }
+            is NetworkResourceUtil.Error -> {
+                CustomNetworkErrorItem(
+                    message = "Something went wrong.",
+                    onRetry = onRetry
                 )
+            }
+            is NetworkResourceUtil.Success -> {
+                if (uiState.data != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .consumeWindowInsets(innerPadding)
+                    ) {
+                        ImageZoomItem(
+                            model = details,
+                            backGroundColor = backGroundTheme
+                        )
+                    }
+
+                    if (showSheet) {
+                        DetailInfoItem(
+                            model = details,
+                            sheetState = sheetState,
+                            onDismissRequest = { showSheet = false },
+                            onSaveToFavorite = {
+                                onSave(
+                                    FavoritesUi()
+                                        .copy(
+                                            photo = details.imageFull,
+                                            width = details.width,
+                                            height = details.height,
+                                            blurHash = details.blurHash
+                                        )
+                                )
+                                Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT)
+                                    .show()
+                            },
+                            onShare = {
+                                // Activates an intent that allows sharing an image.
+                                context.startActivity(shareIntentChooser)
+                            },
+                            onDownload = {
+                                // Allows the download of the image.
+                                downloadImage.download(url = details.imageFull)
+                            },
+                            onSetAsWallpaper = {
+                                scope.launch {
+                                    setWallpaper(context, details.imageFull)
+                                }
+                            },
+                            onUserProfile = {
+                                // Triggers an intent that opens the device's default
+                                // browser with the link to the profile.
+                                context.startActivity(userProfileIntent)
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -201,15 +222,14 @@ private fun ScreenContent(
 /* Screen composables. */
 
 @Composable
-private fun ImageZoomItem(model: PhotoDetailUi) {
-    val systemTheme = isSystemInDarkTheme()
-    val materialBackgroundColor = MaterialTheme.colorScheme.background
-    val backGroudTheme = if (systemTheme) materialBackgroundColor else materialBackgroundColor
-
+private fun ImageZoomItem(
+    model: PhotoDetailUi,
+    backGroundColor: Color
+) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = backGroudTheme),
+            .background(color = backGroundColor),
         contentAlignment = Alignment.Center
     ) {
         // Transformation states for panning, zooming and rotation.
@@ -558,7 +578,8 @@ private fun ImageHeaderItemPreview() {
 
     CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
         ImageZoomItem(
-            model = modelPreview
+            model = modelPreview,
+            backGroundColor = Color.Transparent
         )
     }
 }
