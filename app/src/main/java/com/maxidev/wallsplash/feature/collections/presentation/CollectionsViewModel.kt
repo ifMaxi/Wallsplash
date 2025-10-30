@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.maxidev.wallsplash.common.utils.NetworkResourceUtil
 import com.maxidev.wallsplash.feature.collections.domain.model.CollectionPhotos
 import com.maxidev.wallsplash.feature.collections.domain.usecase.GetCollectionDataUseCase
 import com.maxidev.wallsplash.feature.collections.domain.usecase.GetCollectionPhotosUseCase
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,8 +37,13 @@ class CollectionsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { stateData ->
                 stateData.copy(
-                    collectionData = collectionDataUseCase(collectionId)
-                        .asUi()
+                    collectionData = try {
+                        NetworkResourceUtil.Success(collectionDataUseCase(collectionId).asUi())
+                    } catch (e: HttpException) {
+                        NetworkResourceUtil.Error(e.message.toString())
+                    } catch (e: IOException) {
+                        NetworkResourceUtil.Error(e.message.toString())
+                    }
                 )
             }
         }

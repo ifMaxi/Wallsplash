@@ -29,7 +29,7 @@ import com.maxidev.wallsplash.R
 fun CustomNetworkErrorItem(
     modifier: Modifier = Modifier,
     message: String,
-    onRetry: () -> Unit
+    onRetry: () -> Unit = {}
 ) {
     val isSystemTheme = isSystemInDarkTheme()
     val tintColor = MaterialTheme.colorScheme.outline
@@ -60,13 +60,49 @@ fun CustomNetworkErrorItem(
 
         Spacer(modifier = Modifier.padding(modPadding))
 
-        Button(
-            onClick = onRetry,
-            shape = RoundedCornerShape(10.dp),
-            elevation = ButtonDefaults.buttonElevation(modPadding)
-        ) {
-            Text(text = "Retry")
+        if (onRetry != {}) {
+            Button(
+                onClick = onRetry,
+                shape = RoundedCornerShape(10.dp),
+                elevation = ButtonDefaults.buttonElevation(modPadding)
+            ) {
+                Text(text = "Retry")
+            }
         }
+    }
+}
+
+@Composable
+fun CustomNetworkErrorForPagingItem(
+    modifier: Modifier = Modifier,
+    message: String
+) {
+    val isSystemTheme = isSystemInDarkTheme()
+    val tintColor = MaterialTheme.colorScheme.outline
+    val changeTint = if (isSystemTheme) tintColor else tintColor
+    val modPadding = 8.dp
+
+    Column(
+        modifier = modifier
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(R.drawable.shrug_image),
+            contentDescription = "Something went wrong.",
+            colorFilter = ColorFilter.tint(changeTint),
+            modifier = Modifier
+                .padding(modPadding)
+                .size(120.dp)
+        )
+        Spacer(modifier = Modifier.padding(modPadding))
+
+        Text(
+            text = message,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 

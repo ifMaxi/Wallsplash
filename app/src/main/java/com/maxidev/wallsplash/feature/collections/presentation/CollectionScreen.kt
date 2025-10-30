@@ -49,13 +49,12 @@ import androidx.navigation.compose.composable
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.maxidev.wallsplash.common.presentation.components.CustomAsyncImage
+import com.maxidev.wallsplash.common.utils.NetworkResourceUtil
 import com.maxidev.wallsplash.common.utils.handlePagingLoadState
 import com.maxidev.wallsplash.feature.collections.presentation.model.CollectionPhotosUi
 import com.maxidev.wallsplash.feature.collections.presentation.state.CollectionUiState
 import com.maxidev.wallsplash.feature.navigation.Destinations
 import com.wajahatiqbal.blurhash.BlurHashPainter
-
-// TODO: Manage load states.
 
 /* Extension that encapsulates the navigation code. */
 fun NavGraphBuilder.collectionsDestination(
@@ -94,7 +93,7 @@ private fun ScreenContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(text = collectionData?.title.orEmpty()) },
+                title = { Text(text = collectionData.data?.title.orEmpty()) },
                 navigationIcon = {
                     IconButton(onClick = popBack) {
                         Icon(Icons.Default.ArrowBackIosNew, "Back.")
@@ -113,14 +112,19 @@ private fun ScreenContent(
             contentPadding = innerPadding
         ) {
             item(span = StaggeredGridItemSpan.FullLine) {
-                if (collectionData != null) {
-                    CuratedUserItem(
-                        user = collectionData.name,
-                        totalPhotos = collectionData.totalPhotos,
-                        link = collectionData.link
-                    )
+                when (collectionData) {
+                    is NetworkResourceUtil.Error<*> -> { /* Do nothing ! */ }
+                    is NetworkResourceUtil.Loading<*> -> { /* Do nothing ! */ }
+                    is NetworkResourceUtil.Success<*> -> {
+                        CuratedUserItem(
+                            user = collectionData.data?.name.orEmpty(),
+                            totalPhotos = collectionData.data?.totalPhotos.orEmpty(),
+                            link = collectionData.data?.link.orEmpty()
+                        )
+                    }
                 }
             }
+
             items(
                 collectionPhotos.itemCount,
                 collectionPhotos.itemKey { it.photoId }

@@ -2,11 +2,14 @@
 
 package com.maxidev.wallsplash.feature.search.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,11 +17,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -33,12 +39,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
@@ -49,6 +59,7 @@ import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
+import com.maxidev.wallsplash.R
 import com.maxidev.wallsplash.common.presentation.components.CustomAsyncImage
 import com.maxidev.wallsplash.common.presentation.components.CustomSearchBar
 import com.maxidev.wallsplash.common.utils.handlePagingLoadState
@@ -136,43 +147,59 @@ private fun ScreenContent(
             ) {
                 when (selectedTabIndex) {
                     0 -> {
-                        items(
-                            count = searchPhotos.itemCount,
-                            key = searchPhotos.itemKey { key -> key.photoId }
-                        ) { index ->
-                            val pagingContent = searchPhotos[index]
+                        val searchPhotosItemCount = searchPhotos.itemCount
 
-                            if (pagingContent != null) {
-                                ImageItem(
-                                    model = pagingContent,
-                                    onClick = { navigateToDetail(pagingContent.id) }
-                                )
+                        if (searchPhotosItemCount == 0) {
+                            item(span = StaggeredGridItemSpan.FullLine) {
+                                IdleMessageItem()
                             }
+                        } else {
+                            items(
+                                count = searchPhotosItemCount,
+                                key = searchPhotos.itemKey { key -> key.photoId }
+                            ) { index ->
+                                val pagingContent = searchPhotos[index]
+
+                                if (pagingContent != null) {
+                                    ImageItem(
+                                        model = pagingContent,
+                                        onClick = { navigateToDetail(pagingContent.id) }
+                                    )
+                                }
+                            }
+                            handlePagingLoadState(
+                                loadState = searchPhotos.loadState,
+                                itemCount = searchPhotos.itemCount
+                            )
                         }
-                        handlePagingLoadState(
-                            loadState = searchPhotos.loadState,
-                            itemCount = searchPhotos.itemCount
-                        )
                     }
 
                     1 -> {
-                        items(
-                            count = searchCollections.itemCount,
-                            key = searchCollections.itemKey { key -> key.collectionId }
-                        ) { index ->
-                            val pagingContent = searchCollections[index]
+                        val searchCollectionsItemCount = searchCollections.itemCount
 
-                            if (pagingContent != null) {
-                                CollectionItem(
-                                    model = pagingContent,
-                                    onClick = { navigateToCollections(pagingContent.id) }
-                                )
+                        if (searchCollectionsItemCount == 0) {
+                            item(span = StaggeredGridItemSpan.FullLine) {
+                                IdleMessageItem()
                             }
+                        } else {
+                            items(
+                                count = searchCollectionsItemCount,
+                                key = searchCollections.itemKey { key -> key.collectionId }
+                            ) { index ->
+                                val pagingContent = searchCollections[index]
+
+                                if (pagingContent != null) {
+                                    CollectionItem(
+                                        model = pagingContent,
+                                        onClick = { navigateToCollections(pagingContent.id) }
+                                    )
+                                }
+                            }
+                            handlePagingLoadState(
+                                loadState = searchCollections.loadState,
+                                itemCount = searchCollections.itemCount
+                            )
                         }
-                        handlePagingLoadState(
-                            loadState = searchCollections.loadState,
-                            itemCount = searchCollections.itemCount
-                        )
                     }
                 }
             }
@@ -260,6 +287,39 @@ private fun CollectionItem(
     }
 }
 
+@Composable
+private fun IdleMessageItem() {
+    val isSystemTheme = isSystemInDarkTheme()
+    val tintColor = MaterialTheme.colorScheme.outline
+    val changeTint = if (isSystemTheme) tintColor else tintColor
+    val modPadding = 8.dp
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(R.drawable.searching_image),
+            contentDescription = "Search image.",
+            colorFilter = ColorFilter.tint(changeTint),
+            modifier = Modifier
+                .padding(modPadding)
+                .size(120.dp)
+        )
+        Spacer(modifier = Modifier.padding(modPadding))
+        Text(
+            text = "Nothing to see here,\ntry to find an image.",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(modPadding)
+        )
+    }
+}
+
 /* Preview composables. */
 
 @Preview
@@ -282,4 +342,10 @@ private fun ImageItemPreview() {
             onClick = {}
         )
     }
+}
+
+@Preview
+@Composable
+private fun IdleMessagePreview() {
+    IdleMessageItem()
 }
