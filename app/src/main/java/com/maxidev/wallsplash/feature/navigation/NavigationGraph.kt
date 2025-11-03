@@ -1,5 +1,7 @@
 package com.maxidev.wallsplash.feature.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -18,11 +20,23 @@ fun NavigationGraph(
     navController: NavHostController = rememberNavController(),
     starDestinations: Destinations = Destinations.PhotosView
 ) {
-    // TODO: Transitions screen
+    val animatedContentScope = AnimatedContentTransitionScope.SlideDirection
 
     NavHost(
         navController = navController,
-        startDestination = starDestinations
+        startDestination = starDestinations,
+        enterTransition = {
+            slideIntoContainer(animatedContentScope.Start, tween(700))
+        },
+        exitTransition = {
+            slideOutOfContainer(animatedContentScope.Start, tween(700))
+        },
+        popEnterTransition = {
+            slideIntoContainer(animatedContentScope.End, tween(700))
+        },
+        popExitTransition = {
+            slideOutOfContainer(animatedContentScope.End, tween(700))
+        }
     ) {
         photosDestination(
             navigateToPhotoDetail = { id ->
