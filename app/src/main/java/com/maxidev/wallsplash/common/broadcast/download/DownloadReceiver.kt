@@ -48,15 +48,14 @@ class AndroidDownloader(context: Context) : Downloader {
      * @param url address of the link where the download will be made.
      */
     override fun download(url: String): Long {
-
+        val fileName = url.toUri().lastPathSegment ?: "${System.currentTimeMillis()}.jpg"
         val request = DownloadManager.Request(url.toUri())
             .setTitle("Wallsplash downloader")
             .setMimeType("image/jpg")
-            .setMimeType("image/jpeg")
             .setRequiresCharging(false)
             .setAllowedNetworkTypes(NETWORK_WIFI or NETWORK_MOBILE)
             .setNotificationVisibility(VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "image.jpg")
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 
         return downloadManager.enqueue(request)
     }

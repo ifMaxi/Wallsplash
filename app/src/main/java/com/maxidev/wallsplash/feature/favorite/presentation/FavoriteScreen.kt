@@ -2,6 +2,7 @@
 
 package com.maxidev.wallsplash.feature.favorite.presentation
 
+import android.widget.Toast
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -14,11 +15,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -31,20 +32,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Wallpaper
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,9 +70,11 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -68,9 +82,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import coil3.compose.AsyncImage
+import com.maxidev.wallsplash.common.broadcast.download.AndroidDownloader
+import com.maxidev.wallsplash.common.wallpaper.setWallpaper
 import com.maxidev.wallsplash.feature.favorite.presentation.model.FavoritesUi
 import com.maxidev.wallsplash.feature.navigation.Destinations
 import com.wajahatiqbal.blurhash.BlurHashPainter
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 /* Extension that encapsulates the navigation code. */
@@ -81,7 +98,7 @@ fun NavGraphBuilder.favoriteDestination() {
 
         ScreenContent(
             allFavorites = state.favorites,
-            removePhotos = { viewModel.deleteSelectedPhotos(it) }
+            removePhotos = viewModel::deleteSelectedPhotos
         )
     }
 }
@@ -91,38 +108,44 @@ private fun ScreenContent(
     allFavorites: List<FavoritesUi>,
     removePhotos: (List<UUID>) -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val lazyState = rememberLazyStaggeredGridState()
     var activePhotoId by rememberSaveable { mutableStateOf<UUID?>(null) }
     var selectedIds by rememberSaveable { mutableStateOf(setOf<UUID>()) }
     val inSelectionMode = selectedIds.isNotEmpty()
+    val openDialog = remember { mutableStateOf(false) }
 
     val roundedCornerShape = RoundedCornerShape(10.dp)
 
-    Scaffold(
-        floatingActionButton = {
-            if (inSelectionMode) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    FilledIconButton(
-                        modifier = Modifier.padding(8.dp),
-                        shape = roundedCornerShape,
-                        onClick = {
-                            removePhotos(selectedIds.toList())
-                            selectedIds = emptySet()
-                        }
-                    ) {
-                        Icon(Icons.Default.DeleteSweep, "Delete selected photos.")
-                    }
+    /* Download images. */
+    val downloadImage = AndroidDownloader(context)
 
-                    ElevatedButton(
-                        onClick = { selectedIds = emptySet() },
-                        shape = roundedCornerShape
-                    ) {
-                        Icon(Icons.Default.Close, "Cancel selection.")
-                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                        Text(
-                            text = "${selectedIds.count()}"
-                        )
+    Scaffold(
+        bottomBar = {
+            if (inSelectionMode) {
+                BottomAppBar(
+                    modifier = Modifier.height(70.dp),
+                    actions = {
+                        IconButton(
+                            shape = roundedCornerShape,
+                            onClick = { openDialog.value = true }
+                        ) {
+                            Icon(Icons.Default.DeleteSweep, "Delete selected photos.")
+                        }
+
+                        ElevatedButton(
+                            onClick = { selectedIds = emptySet() },
+                            shape = roundedCornerShape
+                        ) {
+                            Icon(Icons.Default.Close, "Cancel selection.")
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(
+                                text = "${selectedIds.count()}"
+                            )
+                        }
                     }
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -131,7 +154,7 @@ private fun ScreenContent(
                 .fillMaxSize()
                 .consumeWindowInsets(innerPadding),
             columns = StaggeredGridCells.Adaptive(120.dp),
-            state = rememberLazyStaggeredGridState(),
+            state = lazyState,
             contentPadding = innerPadding,
             verticalItemSpacing = 2.dp,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
@@ -173,9 +196,40 @@ private fun ScreenContent(
         }
 
         if (activePhotoId != null) {
+            val activeId = allFavorites.first { it.photoId == activePhotoId }
+
             FullScreenImageItem(
-                model = allFavorites.first { it.photoId == activePhotoId },
-                onDismiss = { activePhotoId = null }
+                model = activeId,
+                onDismiss = { activePhotoId = null },
+                onDownload = { downloadImage.download(activeId.photo) },
+                onSetAsWallpaper = {
+                    scope.launch {
+                        setWallpaper(
+                            context = context,
+                            url = activeId.photo,
+                            exception = {
+                                scope.launch {
+                                    Toast.makeText(
+                                        context,
+                                        "An internet connection is required.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        )
+                    }
+                }
+            )
+        }
+
+        if (openDialog.value) {
+            AdviceDialogItem(
+                onDelete = {
+                    openDialog.value = false
+                    removePhotos(selectedIds.toList())
+                    selectedIds = emptySet()
+                },
+                onDialogVisible = { openDialog.value = false }
             )
         }
     }
@@ -250,46 +304,83 @@ private fun PhotoItem(
 @Composable
 private fun FullScreenImageItem(
     model: FavoritesUi,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onDownload: () -> Unit,
+    onSetAsWallpaper: () -> Unit
 ) {
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        // Transformation states for panning, zooming and rotation.
-        var scale by remember { mutableFloatStateOf(1f) }
-        var rotation by remember { mutableFloatStateOf(0f) }
-        var offSet by remember { mutableStateOf(Offset.Zero) }
-        val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-            scale = (scale * zoomChange).coerceIn(1f, 2f)
-            rotation += rotationChange
+    var expanded by remember { mutableStateOf(false) }
 
-            val extraWidth = (scale - 1) * constraints.maxWidth
-            val extraHeight = (scale - 1) * constraints.maxHeight
-            val maxX = extraWidth / 2
-            val maxY = extraHeight / 2
+    Scaffold(
+        containerColor = Color.Transparent,
+        floatingActionButton = {
+            Box(modifier = Modifier.padding(16.dp)) {
+                FilledIconButton(onClick = { expanded = !expanded }) {
+                    val icon = if (expanded) Icons.Default.MoreHoriz else Icons.Default.MoreVert
+                    val iconDescription = if (expanded) "Hide options." else "Show options."
 
-            offSet = Offset(
-                x = (offSet.x + scale * offsetChange.x).coerceIn(-maxX, maxX),
-                y = (offSet.y + scale * offsetChange.y).coerceIn(-maxY, maxY)
+                    Icon(icon, iconDescription)
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    DropdownMenuItem(
+                        onClick = onDownload,
+                        text = { Text(text = "Download") },
+                        leadingIcon = { Icon(Icons.Default.Download, "Download image.") }
+                    )
+                    DropdownMenuItem(
+                        onClick = onSetAsWallpaper,
+                        text = { Text(text = "Set as wallpaper") },
+                        leadingIcon = { Icon(Icons.Default.Wallpaper, "Set as wallpaper.") }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .consumeWindowInsets(innerPadding),
+            contentAlignment = Alignment.Center
+        ) {
+            // Transformation states for panning, zooming and rotation.
+            var scale by remember { mutableFloatStateOf(1f) }
+            var rotation by remember { mutableFloatStateOf(0f) }
+            var offSet by remember { mutableStateOf(Offset.Zero) }
+            val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+                scale = (scale * zoomChange).coerceIn(1f, 2f)
+                rotation += rotationChange
+
+                val extraWidth = (scale - 1) * constraints.maxWidth
+                val extraHeight = (scale - 1) * constraints.maxHeight
+                val maxX = extraWidth / 2
+                val maxY = extraHeight / 2
+
+                offSet = Offset(
+                    x = (offSet.x + scale * offsetChange.x).coerceIn(-maxX, maxX),
+                    y = (offSet.y + scale * offsetChange.y).coerceIn(-maxY, maxY)
+                )
+            }
+
+            Scrim(onClose = onDismiss, modifier = Modifier.fillMaxSize())
+
+            AsyncImage(
+                model = model.photo,
+                contentDescription = null,
+                modifier = Modifier
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        rotationZ = rotation,
+                        translationX = offSet.x,
+                        translationY = offSet.y
+                    )
+                    .transformable(state)
             )
         }
-
-        Scrim(onClose = onDismiss, modifier = Modifier.fillMaxSize())
-
-        AsyncImage(
-            model = model.photo,
-            contentDescription = null,
-            modifier = Modifier
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    rotationZ = rotation,
-                    translationX = offSet.x,
-                    translationY = offSet.y
-                )
-                .transformable(state)
-        )
     }
 }
 
@@ -317,5 +408,40 @@ private fun Scrim(
                 }
             }
             .background(Color.DarkGray.copy(alpha = 0.75f))
+    )
+}
+
+@Composable
+private fun AdviceDialogItem(
+    onDelete: () -> Unit,
+    onDialogVisible: (Boolean) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDialogVisible(false) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDialogVisible(false)
+                    onDelete()
+                }
+            ) {
+                Text(text = "Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onDialogVisible(false) }) {
+                Text(text = "Cancel")
+            }
+        },
+        title = {
+            Text(text = "Delete photos")
+        },
+        text = {
+            Text(
+                text = "You are about to delete the following photos. " +
+                        "Remember that this action is irreversible.",
+                textAlign = TextAlign.Center
+            )
+        }
     )
 }

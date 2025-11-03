@@ -15,7 +15,11 @@ import java.net.URL
 private const val CHANNEL_ID = "wallpaper_channel"
 private const val NOTIFICATION_ID = 1
 
-suspend fun setWallpaper(context: Context, url: String) {
+suspend fun setWallpaper(
+    context: Context,
+    url: String,
+    exception: (String) -> Unit
+) {
     withContext(Dispatchers.IO) {
         try {
             val imageUrl = URL(url)
@@ -27,7 +31,7 @@ suspend fun setWallpaper(context: Context, url: String) {
                 sendNotification(context)
             }
         } catch (e: IOException) {
-            e.printStackTrace()
+            exception(e.toString())
         }
     }
 }

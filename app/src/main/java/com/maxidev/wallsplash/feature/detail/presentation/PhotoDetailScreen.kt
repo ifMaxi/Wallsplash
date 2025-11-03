@@ -203,7 +203,19 @@ private fun ScreenContent(
                             },
                             onSetAsWallpaper = {
                                 scope.launch {
-                                    setWallpaper(context, details.imageFull)
+                                    setWallpaper(
+                                        context = context,
+                                        url = details.imageFull,
+                                        exception = {
+                                            scope.launch {
+                                                Toast.makeText(
+                                                    context,
+                                                    "An internet connection is required.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    )
                                 }
                             },
                             onUserProfile = {
