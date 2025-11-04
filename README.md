@@ -62,9 +62,9 @@ The **Model** represents the data layer and business logic. Its responsibilities
 - Fetching, storing, and processing data.
 - Interacting with external data sources, such as local databases (e.g., Room) or web services (REST APIs).
 - Containing elements such as:
- - Data classes
- - Repositories
- - Data sources (remote or local)
+  - Data classes
+  - Repositories
+  - Data sources (remote or local)
 
 ### 2. View
 
