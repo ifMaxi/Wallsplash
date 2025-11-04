@@ -95,8 +95,10 @@ The **ViewModel** serves as a bridge between the Model and the View. Its primary
 <img width="190" height="400" alt="Screenshot_20251104_173246" src="https://github.com/user-attachments/assets/12c8f773-9cb5-40e0-8f9f-f3fa6d6f29cc" />
 <img width="190" height="400" alt="Screenshot_20251104_173344" src="https://github.com/user-attachments/assets/5f0e0c9c-1e6f-458f-b81e-074a3ed01b7e" />
 <img width="190" height="400" alt="Screenshot_20251104_173407" src="https://github.com/user-attachments/assets/16070eae-ca76-4cac-9ac3-333ccf2786c9" />
+<img width="190" height="400" alt="Screenshot_20251104_175615" src="https://github.com/user-attachments/assets/562abac6-287c-4734-973f-4bb834d82bff" />
 <img width="190" height="400" alt="Screenshot_20251104_173416" src="https://github.com/user-attachments/assets/a29e5e85-2e31-40e7-8291-fd37bdcdcb10" />
 <img width="190" height="400" alt="Screenshot_20251104_173442" src="https://github.com/user-attachments/assets/427d57d1-8ee9-46b3-963f-dd0e318065b1" />
+<img width="190" height="400" alt="Screenshot_20251104_175013" src="https://github.com/user-attachments/assets/90286c9d-bda0-452a-a404-66b4d2d9e0b6" />
 <img width="190" height="400" alt="Screenshot_20251104_173454" src="https://github.com/user-attachments/assets/4b641280-2a13-4eea-b93c-eff1b99b159a" />
 <img width="190" height="400" alt="Screenshot_20251104_173502" src="https://github.com/user-attachments/assets/c242e38a-8409-44a8-b9e7-48edc69d4e3c" />
 <img width="190" height="400" alt="Screenshot_20251104_173527" src="https://github.com/user-attachments/assets/8a5b69e4-18ce-4e86-a0e6-ffa8d1f76593" />
@@ -106,4 +108,6 @@ The **ViewModel** serves as a bridge between the Model and the View. Its primary
 <img width="190" height="400" alt="Screenshot_20251104_173757" src="https://github.com/user-attachments/assets/b7aba662-f474-4c7b-a432-12ec54898e84" />
 <img width="190" height="400" alt="Screenshot_20251104_174008" src="https://github.com/user-attachments/assets/0e53a5ab-e751-4091-bf12-e4bd5a2c0d65" />
 
-## Video
+## Video demo
+
+<video src="https://github.com/user-attachments/assets/97411c73-d12a-43ae-829a-e6e908d6f3ee" width="300" />
