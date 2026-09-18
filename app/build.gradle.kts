@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.konan.properties.Properties
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.kps)
@@ -13,18 +10,20 @@ android {
     val buildName = "com.maxidev.wallsplash"
 
     namespace = buildName
-    compileSdk = 36
+    compileSdk {
+        version = release(37)
+    }
 
     defaultConfig {
         applicationId = buildName
-        minSdk = 26
-        targetSdk = 36
+        minSdk = 31
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val properties = Properties()
+        val properties = org.jetbrains.kotlin.konan.properties.Properties()
         properties.load(project.rootProject.file("local.properties").inputStream())
 
         buildConfigField(
@@ -35,27 +34,24 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            optimization {
+                enable = false
+                isMinifyEnabled = true
+                isShrinkResources = true
+            }
         }
     }
-    kotlin {
-        compileOptions {
-            val javaCompatibility = JavaVersion.VERSION_21
+    compileOptions {
+        val javaVersion = JavaVersion.VERSION_21
 
-            sourceCompatibility = javaCompatibility
-            targetCompatibility = javaCompatibility
-        }
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
-    buildToolsVersion = "36.0.0"
+    buildToolsVersion = "36.1.0"
 }
 
 dependencies {
