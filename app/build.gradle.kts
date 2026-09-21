@@ -80,14 +80,16 @@ dependencies {
     implementation(libs.androidx.constraintlayout.compose)
 
     // Material 3
-    implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material3)
 
     // Data Store
     implementation(libs.androidx.datastore.preferences)
 
     // Navigation
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
     // Room Database
     implementation(libs.androidx.room.runtime)
