@@ -36,4 +36,9 @@ object Constants {
     const val PHOTOS_TABLE = "photos_table"
     const val COLLECTIONS_TABLE = "collections_table"
     const val FAVORITE_TABLE = "favorite_table"
+
+    // Intent related constants
+    const val GIT_HUB_PAGE = "https://github.com/ifMaxi"
+    const val UNSPLASH_OFFICIAL_PAGE = "https://unsplash.com"
+    const val UNSPLASH_API_PAGE = "https://unsplash.com/developers"
 }
