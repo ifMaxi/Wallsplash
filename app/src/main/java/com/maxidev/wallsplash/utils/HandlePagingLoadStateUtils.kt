@@ -1,5 +1,7 @@
 package com.maxidev.wallsplash.utils
 
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.paging.CombinedLoadStates
@@ -46,6 +48,44 @@ fun LazyStaggeredGridScope.handlePagingLoadState(
             }
             states.append is LoadState.Error -> {
                 item(span = StaggeredGridItemSpan.FullLine) {
+                    CustomNetworkErrorForPagingItem(message = "Something went wrong.")
+                }
+            }
+        }
+    }
+}
+
+fun LazyGridScope.handlePagingLoadState(
+    loadState: CombinedLoadStates,
+    itemCount: Int
+) {
+    loadState.let { states ->
+        when {
+            states.refresh is LoadState.NotLoading && itemCount < 1 -> {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    CustomNetworkErrorForPagingItem(message = "No data available")
+                }
+            }
+            states.refresh is LoadState.Error -> {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    val loadRefresh = states.refresh as LoadState.Error
+
+                    CustomNetworkErrorForPagingItem(
+                        message = when (loadRefresh.error) {
+                            is HttpException -> "Something went wrong."
+                            is IOException -> "No internet connection."
+                            else -> "Unknown error."
+                        }
+                    )
+                }
+            }
+            states.append is LoadState.Loading -> {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    CustomNetworkLoadingItem()
+                }
+            }
+            states.append is LoadState.Error -> {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     CustomNetworkErrorForPagingItem(message = "Something went wrong.")
                 }
             }
