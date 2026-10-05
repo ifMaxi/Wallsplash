@@ -8,7 +8,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,9 +33,11 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -242,7 +243,7 @@ private fun PermissionListItem(modifier: Modifier = Modifier) {
                     contentDescription = "Notifications."
                 )
             },
-            supportingContent = { Text(text = "Turn on/off notifications.")},
+            supportingContent = { Text(text = "Turn on/off notifications.") },
             trailingContent = {
                 IconButton(onClick = { context.startActivity(intent) }) {
                     Icon(
@@ -377,15 +378,10 @@ private fun AboutProjectDialog(onProjectVisibility: (Boolean) -> Unit) {
     val projectDescription = R.string.project_description
 
     AlertDialog(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = Modifier.padding(16.dp),
+        shape = RoundedCornerShape(20.dp),
         onDismissRequest = { onProjectVisibility(false) },
-        title = {
-            Text(
-                text = "About the project"
-            )
-        },
+        title = { Text(text = "About the project") },
         text = {
             Text(
                 text = stringResource(projectDescription),
@@ -394,9 +390,7 @@ private fun AboutProjectDialog(onProjectVisibility: (Boolean) -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = { onProjectVisibility(false) }) {
-                Text(
-                    text = "Dismiss"
-                )
+                Text(text = "Dismiss")
             }
         }
     )
@@ -409,12 +403,10 @@ private fun ThemesDialog(
     updateThemeType: (SettingsType) -> Unit
 ) {
     AlertDialog(
+        modifier = Modifier.padding(16.dp),
+        shape = RoundedCornerShape(20.dp),
         onDismissRequest = { onVisibility(false) },
-        title = {
-            Text(
-                text = "Choose theme"
-            )
-        },
+        title = { Text(text = "Select system theme") },
         text = {
             ChoseThemeRadioButtons(
                 state = themeState,
@@ -423,9 +415,7 @@ private fun ThemesDialog(
         },
         confirmButton = {
             TextButton(onClick = { onVisibility(false) }) {
-                Text(
-                    text = "Confirm"
-                )
+                Text(text = "Confirm")
             }
         }
     )
@@ -436,21 +426,34 @@ private fun ChoseThemeRadioButtons(
     state: SettingsUiState,
     updateThemeType: (SettingsType) -> Unit
 ) {
-    Column(horizontalAlignment = Alignment.Start) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         state.radioItems.forEach {
-            Row(
-                modifier = Modifier.selectable(
-                    selected = (it.value == state.selectedRadio),
-                    onClick = { updateThemeType(it.value) }
+            ListItem(
+                modifier = Modifier
+                    .selectable(
+                        selected = it.value == state.selectedRadio,
+                        onClick = { updateThemeType(it.value) }
+                    ),
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent
                 ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = (it.value == state.selectedRadio),
-                    onClick = { updateThemeType(it.value) }
-                )
-                Text(text = it.title)
-            }
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(it.icon),
+                        contentDescription = it.title
+                    )
+                },
+                trailingContent = {
+                    RadioButton(
+                        selected = (it.value == state.selectedRadio),
+                        onClick = { updateThemeType(it.value) }
+                    )
+                },
+                content = { Text(text = it.title) }
+            )
         }
     }
 }
@@ -508,6 +511,18 @@ private fun AboutItemPreview() {
 @Composable
 private fun MessageBoxPreview() {
     MessageBoxItem()
+}
+
+@Preview
+@Composable
+private fun AboutProjectPreview() {
+    val openDialog by remember { mutableStateOf(true) }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (openDialog) {
+            AboutProjectDialog(onProjectVisibility = {})
+        }
+    }
 }
 
 @Preview(showBackground = true)
