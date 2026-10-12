@@ -38,6 +38,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.maxidev.wallsplash.presentation.collections.CollectionsScreen
 import com.maxidev.wallsplash.presentation.photos.PhotosScreen
+import com.maxidev.wallsplash.presentation.search.SearchScreen
 import com.maxidev.wallsplash.presentation.settings.SettingsScreen
 import com.maxidev.wallsplash.presentation.theme.WallsplashTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -120,12 +121,16 @@ private fun NavigationGraph() {
                 }
                 entry<Collections> {
                     CollectionsScreen(
-                        navigateToCollectionDetail = { navBackStack.add(CollectionDetail(it))},
+                        navigateToCollectionDetail = { navBackStack.add(CollectionDetail(it)) },
                         navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
                     )
                 }
-                entry<Search> {}
-                entry<Favorites> {}
+                entry<Search> {
+                    SearchScreen(
+                        navigateToDetail = { navBackStack.add(PhotoDetail(it)) },
+                        navigateToCollections = {}
+                    )
+                }
                 entry<Settings> {
                     SettingsScreen()
                 }
@@ -145,14 +150,12 @@ private data class TopLevelRoute(
 private val topLevelRoutes = listOf(
     TopLevelRoute(key = Home, icon = R.drawable.home_app, label = "Home"),
     TopLevelRoute(key = Collections, icon = R.drawable.box, label = "Collections"),
-    TopLevelRoute(key = Favorites, icon = R.drawable.favorite, label = "Favorite"),
     TopLevelRoute(key = Search, icon = R.drawable.search, label = "Search"),
     TopLevelRoute(key = Settings, icon = R.drawable.settings, label = "Setting")
 )
 
 @Serializable private data object Home : NavKey
 @Serializable private data object Collections : NavKey
-@Serializable private data object Favorites : NavKey
 @Serializable private data object Search : NavKey
 @Serializable private data object Settings : NavKey
 @Serializable private data class PhotoDetail(val id: String) : NavKey
