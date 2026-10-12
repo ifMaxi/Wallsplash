@@ -1,200 +1,201 @@
-@file:OptIn(ExperimentalCoilApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.maxidev.wallsplash.presentation.search
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.AppBarWithSearch
+import androidx.compose.material3.ExpandedDockedSearchBarWithGap
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSearchBarWithGapState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import coil3.ColorImage
-import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.AsyncImagePreviewHandler
-import coil3.compose.LocalAsyncImagePreviewHandler
+import coil3.compose.AsyncImage
 import com.maxidev.wallsplash.R
+import com.maxidev.wallsplash.domain.model.History
 import com.maxidev.wallsplash.domain.model.SearchCollections
 import com.maxidev.wallsplash.domain.model.SearchPhoto
-import com.maxidev.wallsplash.presentation.components.CustomAsyncImage
-import com.maxidev.wallsplash.presentation.components.CustomSearchBar
 import com.maxidev.wallsplash.utils.handlePagingLoadState
 import com.wajahatiqbal.blurhash.BlurHashPainter
-import java.util.UUID
+import kotlinx.coroutines.launch
 
-/* Extension that encapsulates the navigation code. */
-//fun NavGraphBuilder.searchDestination(
-//    navigateToDetail: (String) -> Unit,
-//    navigateToCollections: (String) -> Unit
-//) {
-//    composable<Destinations.SearchView> {
-//        val viewModel = hiltViewModel<SearchViewModel>()
-//        val state by viewModel.uiState.collectAsStateWithLifecycle()
-//        val input by viewModel.input.collectAsStateWithLifecycle()
-//
-//        ScreenContent(
-//            uiState = state,
-//            input = input,
-//            onInputChange = viewModel::onInputChange,
-//            onSearch = viewModel::onSearch,
-//            navigateToDetail = navigateToDetail,
-//            navigateToCollections = navigateToCollections
-//        )
-//    }
-//}
+@Composable
+fun SearchScreen(
+    viewModel: SearchViewModel = hiltViewModel(),
+    navigateToDetail: (String) -> Unit,
+    navigateToCollections: (String) -> Unit
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val historyState by viewModel.historyState.collectAsStateWithLifecycle()
+    val textField = viewModel.textFieldState
+
+    ScreenContent(
+        uiState = state,
+        textFieldState = textField,
+        onSearch = viewModel::onSearch,
+        navigateToDetail = navigateToDetail,
+        navigateToCollections = navigateToCollections,
+        historyList = historyState,
+        onSaveToDataBase = viewModel::saveInDb,
+        onDelete = viewModel::deleteItem,
+        onClearAll = viewModel::clearAll,
+    )
+}
 
 @Composable
 private fun ScreenContent(
     uiState: SearchUiState,
-    input: String,
-    onInputChange: (String) -> Unit,
+    historyList: List<String>,
     onSearch: (String) -> Unit,
+    textFieldState: TextFieldState,
+    onSaveToDataBase: (History) -> Unit,
+    onDelete: (String) -> Unit,
+    onClearAll: () -> Unit,
     navigateToDetail: (String) -> Unit,
     navigateToCollections: (String) -> Unit
 ) {
     val searchPhotos = uiState.searchPhotos.collectAsLazyPagingItems()
     val searchCollections = uiState.searchCollections.collectAsLazyPagingItems()
+    val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     val tabTitles = listOf("Photos", "Collections")
 
     // Separate states for the LazyList to avoid sharing state when switching tabs.
     val photosLazyState = rememberLazyStaggeredGridState()
     val collectionLazyState = rememberLazyStaggeredGridState()
+    val currentState = if (selectedTabIndex == 0) photosLazyState else collectionLazyState
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = WindowInsets(0),
         topBar = {
-            PrimaryTabRow(
-                modifier = Modifier.statusBarsPadding(),
-                selectedTabIndex = selectedTabIndex
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent),
+                verticalArrangement = Arrangement.Center
             ) {
-                tabTitles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(text = title) }
-                    )
+                SearchBarItem(
+                    textFieldState = textFieldState,
+                    onSearch = onSearch,
+                    scrollBehavior = scrollBehavior,
+                    historyList = historyList,
+                    onSaveToDataBase = onSaveToDataBase,
+                    onDelete = onDelete,
+                    onClearAll = onClearAll
+                )
+                PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+                    tabTitles.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index },
+                            text = { Text(text = title) }
+                        )
+                    }
                 }
             }
-        },
-        bottomBar = {
-            CustomSearchBar(
-                modifier = Modifier.navigationBarsPadding(),
-                query = input,
-                onQueryChange = onInputChange,
-                onSearch = onSearch,
-                content = { /* DO NOTHING ! */ }
-            )
         }
     ) { innerPadding ->
-        val currentState = if (selectedTabIndex == 0) photosLazyState else collectionLazyState
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier
+                .fillMaxSize(),
+            columns = StaggeredGridCells.Adaptive(160.dp),
+            state = currentState,
+            contentPadding = innerPadding
+        ) {
+            when (selectedTabIndex) {
+                0 -> {
+                    items(
+                        count = searchPhotos.itemCount,
+                        key = searchPhotos.itemKey { key -> key.photoId }
+                    ) { index ->
+                        val pagingContent = searchPhotos[index]
 
-        Box(modifier = Modifier.statusBarsPadding()) {
-            LazyVerticalStaggeredGrid(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .consumeWindowInsets(innerPadding),
-                columns = StaggeredGridCells.Adaptive(160.dp),
-                state = currentState,
-                contentPadding = innerPadding
-            ) {
-                when (selectedTabIndex) {
-                    0 -> {
-                        val searchPhotosItemCount = searchPhotos.itemCount
-
-                        if (searchPhotosItemCount == 0) {
-                            item(span = StaggeredGridItemSpan.FullLine) {
-                                IdleMessageItem()
-                            }
-                        } else {
-                            items(
-                                count = searchPhotosItemCount,
-                                key = searchPhotos.itemKey { key -> key.photoId }
-                            ) { index ->
-                                val pagingContent = searchPhotos[index]
-
-                                if (pagingContent != null) {
-                                    ImageItem(
-                                        model = pagingContent,
-                                        onClick = { navigateToDetail(pagingContent.id) }
-                                    )
-                                }
-                            }
-                            handlePagingLoadState(
-                                loadState = searchPhotos.loadState,
-                                itemCount = searchPhotos.itemCount
+                        if (pagingContent != null) {
+                            ImageItem(
+                                model = pagingContent,
+                                navigateToDetail = { navigateToDetail(pagingContent.id) }
                             )
                         }
                     }
+                    handlePagingLoadState(
+                        loadState = searchPhotos.loadState,
+                        itemCount = searchPhotos.itemCount
+                    )
+                }
 
-                    1 -> {
-                        val searchCollectionsItemCount = searchCollections.itemCount
+                1 -> {
+                    items(
+                        count = searchCollections.itemCount,
+                        key = searchCollections.itemKey { key -> key.collectionId }
+                    ) { index ->
+                        val pagingContent = searchCollections[index]
 
-                        if (searchCollectionsItemCount == 0) {
-                            item(span = StaggeredGridItemSpan.FullLine) {
-                                IdleMessageItem()
-                            }
-                        } else {
-                            items(
-                                count = searchCollectionsItemCount,
-                                key = searchCollections.itemKey { key -> key.collectionId }
-                            ) { index ->
-                                val pagingContent = searchCollections[index]
-
-                                if (pagingContent != null) {
-                                    CollectionItem(
-                                        model = pagingContent,
-                                        onClick = { navigateToCollections(pagingContent.id) }
-                                    )
-                                }
-                            }
-                            handlePagingLoadState(
-                                loadState = searchCollections.loadState,
-                                itemCount = searchCollections.itemCount
+                        if (pagingContent != null) {
+                            CollectionItem(
+                                model = pagingContent,
+                                navigateToCollectionsDetail = { navigateToCollections(pagingContent.id) }
                             )
                         }
                     }
+                    handlePagingLoadState(
+                        loadState = searchCollections.loadState,
+                        itemCount = searchCollections.itemCount
+                    )
                 }
             }
         }
@@ -204,9 +205,9 @@ private fun ScreenContent(
 @Composable
 private fun ImageItem(
     model: SearchPhoto,
-    onClick: () -> Unit
+    navigateToDetail: () -> Unit
 ) {
-    val blurHolder = BlurHashPainter(
+    val blurHashPlaceholder = BlurHashPainter(
         blurHash = model.blurHash,
         width = model.width,
         height = model.height,
@@ -214,28 +215,28 @@ private fun ImageItem(
         scale = 0.1f
     )
 
-    CustomAsyncImage(
+    AsyncImage(
         model = model.urlRegular,
         contentDescription = null,
-        contentScale = ContentScale.FillBounds,
-        blurHash = blurHolder,
+        placeholder = blurHashPlaceholder,
+        error = blurHashPlaceholder,
+        contentScale = ContentScale.Crop,
         modifier = Modifier
             .aspectRatio(model.width.toFloat() / model.height.toFloat())
             .padding(8.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .clickable { onClick() }
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { navigateToDetail() }
     )
 }
 
 @Composable
 private fun CollectionItem(
     model: SearchCollections,
-    onClick: () -> Unit
+    navigateToCollectionsDetail: () -> Unit
 ) {
-    val roundedCornerShape = RoundedCornerShape(10.dp)
+    val roundedCornerShape = RoundedCornerShape(20.dp)
     val colorWhite = Color.White
-    val modPadding = 8.dp
-    val blurHolder = BlurHashPainter(
+    val blurHashPainter = BlurHashPainter(
         blurHash = model.blurHash,
         width = model.width,
         height = model.height,
@@ -246,24 +247,25 @@ private fun CollectionItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(modPadding)
+            .padding(8.dp)
             .background(color = colorWhite, shape = roundedCornerShape)
-            .clickable { onClick() }
+            .clickable { navigateToCollectionsDetail() }
     ) {
-        CustomAsyncImage(
+        AsyncImage(
+            modifier = Modifier
+                .height(200.dp)
+                .clip(roundedCornerShape),
             model = model.coverPhoto,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            blurHash = blurHolder,
-            modifier = Modifier
-                .height(200.dp)
-                .clip(roundedCornerShape)
+            placeholder = blurHashPainter,
+            error = blurHashPainter
         )
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(modPadding),
-            verticalArrangement = Arrangement.spacedBy(modPadding)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = model.title,
@@ -273,8 +275,7 @@ private fun CollectionItem(
                 color = colorWhite
             )
             Text(
-                text = model.totalPhotos.toString(),
-                fontWeight = FontWeight.Light,
+                text = model.totalPhotos,
                 color = colorWhite
             )
         }
@@ -282,64 +283,122 @@ private fun CollectionItem(
 }
 
 @Composable
-private fun IdleMessageItem() {
-    val isSystemTheme = isSystemInDarkTheme()
-    val tintColor = MaterialTheme.colorScheme.outline
-    val changeTint = if (isSystemTheme) tintColor else tintColor
-    val modPadding = 8.dp
+private fun SearchBarItem(
+    historyList: List<String>,
+    textFieldState: TextFieldState = rememberTextFieldState(),
+    onSearch: (String) -> Unit,
+    scrollBehavior: SearchBarScrollBehavior? = null,
+    onSaveToDataBase: (History) -> Unit,
+    onDelete: (String) -> Unit,
+    onClearAll: () -> Unit
+) {
+    val shape = RoundedCornerShape(20.dp)
+    val scope = rememberCoroutineScope()
+    val searchBarState = rememberSearchBarWithGapState()
+    val inputField =
+        @Composable {
+            SearchBarDefaults.InputField(
+                textFieldState = textFieldState,
+                searchBarState = searchBarState,
+                onSearch = {
+                    onSearch(textFieldState.text.toString())
+                    onSaveToDataBase(History(query = textFieldState.text.toString()))
+                    scope.launch { searchBarState.animateToCollapsed() }
+                },
+                placeholder = {
+                    Text(modifier = Modifier.clearAndSetSemantics {}, text = "Search")
+                },
+                leadingIcon = {
+                    Icon(painterResource(R.drawable.search), contentDescription = "Search")
+                },
+                trailingIcon = {
+                    if (textFieldState.text.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            modifier = Modifier.clickable { textFieldState.clearText() }
+                        )
+                    }
+                }
+            )
+        }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    AppBarWithSearch(
+        state = searchBarState,
+        inputField = inputField,
+        shape = shape,
+        scrollBehavior = scrollBehavior
+    )
+    ExpandedDockedSearchBarWithGap(
+        state = searchBarState,
+        inputField = inputField,
+        shape = shape,
+        dropdownShape = shape
     ) {
-        Image(
-            painter = painterResource(R.drawable.searching_image),
-            contentDescription = "Search image.",
-            colorFilter = ColorFilter.tint(changeTint),
-            modifier = Modifier
-                .padding(modPadding)
-                .size(120.dp)
-        )
-        Spacer(modifier = Modifier.padding(modPadding))
+        if (historyList.isEmpty()) {
+            Text(
+                text = "No recent searches",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+        } else {
+            LazyColumn {
+                item {
+                    DeleteAllItem(onClearAll = onClearAll)
+                }
+                items(items = historyList, key = { it }) { item ->
+                    ListItem(
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        leadingContent = { Icon(painterResource(R.drawable.history), "History") },
+                        trailingContent = {
+                            IconButton(onClick = { onDelete(item) }) {
+                                Icon(
+                                    painterResource(R.drawable.close),
+                                    contentDescription = "Delete"
+                                )
+                            }
+                        },
+                        content = { Text(text = item) },
+                        onClick = {
+                            textFieldState.setTextAndPlaceCursorAtEnd(item)
+                            onSearch(textFieldState.text.toString())
+                            scope.launch { searchBarState.animateToCollapsed() }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeleteAllItem(
+    modifier: Modifier = Modifier,
+    onClearAll: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
-            text = "Nothing to see here,\ntry to find an image.",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(modPadding)
+            text = "Recent",
+            fontSize = 14.sp
         )
+        TextButton(onClick = onClearAll) {
+            Text(text = "Clear all")
+        }
     }
 }
 
-/* Preview composables. */
-
-@Preview
+@Preview(showBackground = true)
 @Composable
-private fun ImageItemPreview() {
-    val previewHandler = AsyncImagePreviewHandler {
-        ColorImage(Color.DarkGray.toArgb())
-    }
-
-    CompositionLocalProvider(LocalAsyncImagePreviewHandler provides previewHandler) {
-        ImageItem(
-            model = SearchPhoto(
-                photoId = UUID.randomUUID(),
-                id = "1",
-                width = 100,
-                height = 100,
-                blurHash = "",
-                urlRegular = ""
-            ),
-            onClick = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun IdleMessagePreview() {
-    IdleMessageItem()
+private fun DeleteAllPreview() {
+    DeleteAllItem(
+        onClearAll = {}
+    )
 }

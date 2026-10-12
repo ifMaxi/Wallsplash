@@ -89,7 +89,6 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
 import com.maxidev.wallsplash.broadcast.download.AndroidDownloader
-import com.maxidev.wallsplash.domain.model.Favorites
 import com.maxidev.wallsplash.domain.model.PhotoDetail
 import com.maxidev.wallsplash.presentation.components.CustomNetworkErrorItem
 import com.maxidev.wallsplash.presentation.components.CustomNetworkLoadingItem
@@ -114,7 +113,6 @@ import kotlinx.coroutines.launch
 @Composable
 private fun ScreenContent(
     uiState: NetworkResourceUtil<PhotoDetail>,
-    onSave: (Favorites) -> Unit,
     onRetry: () -> Unit
 ) {
     val context = LocalContext.current

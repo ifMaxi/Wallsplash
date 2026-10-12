@@ -1,7 +1,9 @@
 package com.maxidev.wallsplash.data.mappers
 
+import com.maxidev.wallsplash.data.local.entity.HistoryEntity
 import com.maxidev.wallsplash.data.remote.dto.SearchCollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.SearchPhotosDto
+import com.maxidev.wallsplash.domain.model.History
 import com.maxidev.wallsplash.domain.model.SearchCollections
 import com.maxidev.wallsplash.domain.model.SearchPhoto
 
@@ -24,7 +26,21 @@ fun SearchCollectionsDto.asDomain() =
             width = data?.coverPhoto?.width ?: 0,
             height = data?.coverPhoto?.height ?: 0,
             blurHash = data?.coverPhoto?.blurHash.orEmpty(),
-            totalPhotos = data?.totalPhotos ?: 0,
+            totalPhotos = "${data?.totalPhotos}",
             coverPhoto = data?.coverPhoto?.urls?.regular.orEmpty()
         )
     }
+
+fun HistoryEntity.asDomain() =
+    History(
+        id = id,
+        query = query,
+        timeStamp = timeStamp
+    )
+
+fun History.asEntity() =
+    HistoryEntity(
+        id = id,
+        query = query,
+        timeStamp = timeStamp
+    )

@@ -6,7 +6,7 @@ data class SearchCollections(
     val collectionId: UUID = UUID.randomUUID(),
     val id: String,
     val title: String,
-    val totalPhotos: Int,
+    val totalPhotos: String,
     val width: Int,
     val height: Int,
     val blurHash: String,
