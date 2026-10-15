@@ -161,7 +161,8 @@ private fun ScreenContent(
                 }
                 handlePagingLoadState(
                     loadState = allPhotos.loadState,
-                    itemCount = allPhotos.itemCount
+                    itemCount = allPhotos.itemCount,
+                    onRetry = { allPhotos.retry() }
                 )
             }
         }

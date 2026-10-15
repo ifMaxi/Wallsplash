@@ -163,7 +163,8 @@ private fun ScreenContent(
                 }
                 handlePagingLoadState(
                     loadState = allCollections.loadState,
-                    itemCount = allCollections.itemCount
+                    itemCount = allCollections.itemCount,
+                    onRetry = { allCollections.retry() }
                 )
             }
         }

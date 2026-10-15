@@ -1,7 +1,6 @@
 package com.maxidev.wallsplash.presentation.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,107 +28,94 @@ import com.maxidev.wallsplash.R
 fun CustomNetworkErrorItem(
     modifier: Modifier = Modifier,
     message: String,
-    onRetry: () -> Unit = {}
+    onRetry: () -> Unit
 ) {
-    val isSystemTheme = isSystemInDarkTheme()
-    val tintColor = MaterialTheme.colorScheme.outline
-    val changeTint = if (isSystemTheme) tintColor else tintColor
-    val modPadding = 8.dp
-
     Column(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.weight(1f))
         Image(
-            painter = painterResource(R.drawable.shrug_image),
-            contentDescription = "Something went wrong.",
-            colorFilter = ColorFilter.tint(changeTint),
+            painter = painterResource(R.drawable.sentiment_dissatisfied),
+            contentDescription = message,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.outline),
             modifier = Modifier
-                .padding(modPadding)
-                .size(120.dp)
+                .padding(16.dp)
+                .size(140.dp)
         )
-        Spacer(modifier = Modifier.padding(modPadding))
-
+        Spacer(modifier = Modifier.padding(16.dp))
         Text(
             text = message,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
         )
-
-        Spacer(modifier = Modifier.padding(modPadding))
-
-        if (onRetry != {}) {
-            Button(
-                onClick = onRetry,
-                shape = RoundedCornerShape(10.dp),
-                elevation = ButtonDefaults.buttonElevation(modPadding)
-            ) {
-                Text(text = "Retry")
-            }
+        Spacer(modifier = Modifier.weight(1f))
+        ElevatedButton(
+            onClick = onRetry,
+            shape = RoundedCornerShape(20.dp),
+            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 8.dp)
+        ) {
+            Text(text = "Retry")
         }
+        Spacer(modifier = Modifier.padding(16.dp))
     }
 }
 
 @Composable
 fun CustomNetworkErrorForPagingItem(
     modifier: Modifier = Modifier,
-    message: String
+    message: String,
+    onRetry: () -> Unit
 ) {
-    val isSystemTheme = isSystemInDarkTheme()
-    val tintColor = MaterialTheme.colorScheme.outline
-    val changeTint = if (isSystemTheme) tintColor else tintColor
-    val modPadding = 8.dp
-
     Column(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.weight(1f))
         Image(
-            painter = painterResource(R.drawable.shrug_image),
-            contentDescription = "Something went wrong.",
-            colorFilter = ColorFilter.tint(changeTint),
+            painter = painterResource(R.drawable.sentiment_dissatisfied),
+            contentDescription = message,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.outline),
             modifier = Modifier
-                .padding(modPadding)
-                .size(120.dp)
+                .padding(16.dp)
+                .size(140.dp)
         )
-        Spacer(modifier = Modifier.padding(modPadding))
-
+        Spacer(modifier = Modifier.padding(16.dp))
         Text(
             text = message,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
         )
+        Spacer(modifier = Modifier.weight(1f))
+        ElevatedButton(
+            onClick = onRetry,
+            shape = RoundedCornerShape(20.dp),
+            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 8.dp)
+        ) {
+            Text(text = "Retry")
+        }
+        Spacer(modifier = Modifier.padding(16.dp))
     }
 }
 
 @Composable
 fun CustomNetworkLoadingItem() {
-    val isSystemTheme = isSystemInDarkTheme()
-    val tintColor = MaterialTheme.colorScheme.outline
-    val changeTint = if (isSystemTheme) tintColor else tintColor
-    val modPadding = 8.dp
-
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(R.drawable.hour_glass_image),
+            painter = painterResource(R.drawable.cycle),
             contentDescription = "Loading",
-            colorFilter = ColorFilter.tint(changeTint),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.outline),
             modifier = Modifier
-                .padding(modPadding)
-                .size(120.dp)
+                .padding(16.dp)
+                .size(140.dp)
         )
-
-        Spacer(modifier = Modifier.padding(modPadding))
-
+        Spacer(modifier = Modifier.padding(16.dp))
         LinearProgressIndicator()
     }
 }
@@ -141,6 +127,15 @@ fun CustomNetworkLoadingItem() {
 private fun CustomNetworkErrorItemPreview() {
     CustomNetworkErrorItem(
         message = "Something went wrong.",
+        onRetry = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CustomErrorPaging() {
+    CustomNetworkErrorForPagingItem(
+        message = "Lorem impsum",
         onRetry = {}
     )
 }

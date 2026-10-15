@@ -19,13 +19,17 @@ import java.io.IOException
  */
 fun LazyStaggeredGridScope.handlePagingLoadState(
     loadState: CombinedLoadStates,
-    itemCount: Int
+    itemCount: Int,
+    onRetry: () -> Unit
 ) {
     loadState.let { states ->
         when {
             states.refresh is LoadState.NotLoading && itemCount < 1 -> {
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    CustomNetworkErrorForPagingItem(message = "No data available")
+                    CustomNetworkErrorForPagingItem(
+                        message = "No data available",
+                        onRetry = onRetry
+                    )
                 }
             }
             states.refresh is LoadState.Error -> {
@@ -37,7 +41,8 @@ fun LazyStaggeredGridScope.handlePagingLoadState(
                             is HttpException -> "Something went wrong."
                             is IOException -> "No internet connection."
                             else -> "Unknown error."
-                        }
+                        },
+                        onRetry = onRetry
                     )
                 }
             }
@@ -48,7 +53,10 @@ fun LazyStaggeredGridScope.handlePagingLoadState(
             }
             states.append is LoadState.Error -> {
                 item(span = StaggeredGridItemSpan.FullLine) {
-                    CustomNetworkErrorForPagingItem(message = "Something went wrong.")
+                    CustomNetworkErrorForPagingItem(
+                        message = "Something went wrong.",
+                        onRetry = onRetry
+                    )
                 }
             }
         }
@@ -57,13 +65,17 @@ fun LazyStaggeredGridScope.handlePagingLoadState(
 
 fun LazyGridScope.handlePagingLoadState(
     loadState: CombinedLoadStates,
-    itemCount: Int
+    itemCount: Int,
+    onRetry: () -> Unit
 ) {
     loadState.let { states ->
         when {
             states.refresh is LoadState.NotLoading && itemCount < 1 -> {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    CustomNetworkErrorForPagingItem(message = "No data available")
+                    CustomNetworkErrorForPagingItem(
+                        message = "No data available",
+                        onRetry = onRetry
+                    )
                 }
             }
             states.refresh is LoadState.Error -> {
@@ -75,7 +87,8 @@ fun LazyGridScope.handlePagingLoadState(
                             is HttpException -> "Something went wrong."
                             is IOException -> "No internet connection."
                             else -> "Unknown error."
-                        }
+                        },
+                        onRetry = onRetry
                     )
                 }
             }
@@ -86,7 +99,10 @@ fun LazyGridScope.handlePagingLoadState(
             }
             states.append is LoadState.Error -> {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    CustomNetworkErrorForPagingItem(message = "Something went wrong.")
+                    CustomNetworkErrorForPagingItem(
+                        message = "Something went wrong.",
+                        onRetry = onRetry
+                    )
                 }
             }
         }

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.maxidev.wallsplash.presentation.detail.collection
 
 import android.content.Intent
@@ -21,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -133,7 +130,8 @@ private fun ScreenContent(
             }
             handlePagingLoadState(
                 loadState = collectionPhotos.loadState,
-                itemCount = collectionPhotos.itemCount
+                itemCount = collectionPhotos.itemCount,
+                onRetry = { collectionPhotos.retry() }
             )
         }
     }
