@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -27,20 +29,24 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AppBarWithSearch
-import androidx.compose.material3.ExpandedDockedSearchBarWithGap
+import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarScrollBehavior
+import androidx.compose.material3.SearchBarValue
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberSearchBarWithGapState
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -124,9 +130,7 @@ private fun ScreenContent(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Transparent),
+                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
                 verticalArrangement = Arrangement.Center
             ) {
                 SearchBarItem(
@@ -151,8 +155,7 @@ private fun ScreenContent(
         }
     ) { innerPadding ->
         LazyVerticalStaggeredGrid(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             columns = StaggeredGridCells.Adaptive(160.dp),
             state = currentState,
             contentPadding = innerPadding
@@ -174,7 +177,8 @@ private fun ScreenContent(
                     }
                     handlePagingLoadState(
                         loadState = searchPhotos.loadState,
-                        itemCount = searchPhotos.itemCount
+                        itemCount = searchPhotos.itemCount,
+                        onRetry = { searchPhotos.retry() }
                     )
                 }
 
@@ -188,13 +192,18 @@ private fun ScreenContent(
                         if (pagingContent != null) {
                             CollectionItem(
                                 model = pagingContent,
-                                navigateToCollectionsDetail = { navigateToCollections(pagingContent.id) }
+                                navigateToCollectionsDetail = {
+                                    navigateToCollections(
+                                        pagingContent.id
+                                    )
+                                }
                             )
                         }
                     }
                     handlePagingLoadState(
                         loadState = searchCollections.loadState,
-                        itemCount = searchCollections.itemCount
+                        itemCount = searchCollections.itemCount,
+                        onRetry = { searchCollections.retry() }
                     )
                 }
             }
@@ -252,9 +261,7 @@ private fun CollectionItem(
             .clickable { navigateToCollectionsDetail() }
     ) {
         AsyncImage(
-            modifier = Modifier
-                .height(200.dp)
-                .clip(roundedCornerShape),
+            modifier = Modifier.height(200.dp).clip(roundedCornerShape),
             model = model.coverPhoto,
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -262,9 +269,7 @@ private fun CollectionItem(
             error = blurHashPainter
         )
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(8.dp),
+            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
@@ -274,10 +279,7 @@ private fun CollectionItem(
                 overflow = TextOverflow.Ellipsis,
                 color = colorWhite
             )
-            Text(
-                text = model.totalPhotos,
-                color = colorWhite
-            )
+            Text(text = model.totalPhotos, color = colorWhite)
         }
     }
 }
@@ -293,16 +295,19 @@ private fun SearchBarItem(
     onClearAll: () -> Unit
 ) {
     val shape = RoundedCornerShape(20.dp)
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+    val tabTitles = listOf("Recent searches", "Suggestions")
     val scope = rememberCoroutineScope()
-    val searchBarState = rememberSearchBarWithGapState()
+    val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Expanded)
+    val textField = textFieldState.text.toString()
     val inputField =
         @Composable {
             SearchBarDefaults.InputField(
                 textFieldState = textFieldState,
                 searchBarState = searchBarState,
                 onSearch = {
-                    onSearch(textFieldState.text.toString())
-                    onSaveToDataBase(History(query = textFieldState.text.toString()))
+                    onSearch(textField)
+                    onSaveToDataBase(History(query = textField))
                     scope.launch { searchBarState.animateToCollapsed() }
                 },
                 placeholder = {
@@ -329,45 +334,72 @@ private fun SearchBarItem(
         shape = shape,
         scrollBehavior = scrollBehavior
     )
-    ExpandedDockedSearchBarWithGap(
+    ExpandedFullScreenSearchBar(
         state = searchBarState,
-        inputField = inputField,
-        shape = shape,
-        dropdownShape = shape
+        inputField = inputField
     ) {
-        if (historyList.isEmpty()) {
-            Text(
-                text = "No recent searches",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-        } else {
-            LazyColumn {
-                item {
-                    DeleteAllItem(onClearAll = onClearAll)
-                }
-                items(items = historyList, key = { it }) { item ->
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        leadingContent = { Icon(painterResource(R.drawable.history), "History") },
-                        trailingContent = {
-                            IconButton(onClick = { onDelete(item) }) {
-                                Icon(
-                                    painterResource(R.drawable.close),
-                                    contentDescription = "Delete"
-                                )
-                            }
-                        },
-                        content = { Text(text = item) },
-                        onClick = {
-                            textFieldState.setTextAndPlaceCursorAtEnd(item)
-                            onSearch(textFieldState.text.toString())
-                            scope.launch { searchBarState.animateToCollapsed() }
-                        }
+        PrimaryTabRow(
+            containerColor = Color.Transparent,
+            selectedTabIndex = selectedTabIndex
+        ) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(text = title) }
+                )
+            }
+        }
+
+        when (selectedTabIndex) {
+            0 -> {
+                if (historyList.isEmpty()) {
+                    Text(
+                        text = "No recent searches",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .align(Alignment.CenterHorizontally)
                     )
+                } else {
+                    LazyColumn {
+                        item {
+                            DeleteAllItem(onClearAll = onClearAll)
+                        }
+                        items(items = historyList, key = { it }) { item ->
+                            ListItem(
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                leadingContent = {
+                                    Icon(painterResource(R.drawable.history), "History")
+                                },
+                                trailingContent = {
+                                    IconButton(onClick = { onDelete(item) }) {
+                                        Icon(
+                                            painterResource(R.drawable.close),
+                                            contentDescription = "Delete"
+                                        )
+                                    }
+                                },
+                                content = { Text(text = item) },
+                                onClick = {
+                                    textFieldState.setTextAndPlaceCursorAtEnd(item)
+                                    onSearch(item)
+                                    scope.launch { searchBarState.animateToCollapsed() }
+                                }
+                            )
+                        }
+                    }
                 }
+            }
+            1 -> {
+                SuggestionsScreen(
+                    onSelectedSuggestion = {
+                        textFieldState.setTextAndPlaceCursorAtEnd(it)
+                        onSearch(it)
+                        onSaveToDataBase(History(query = it))
+                        scope.launch { searchBarState.animateToCollapsed() }
+                    }
+                )
             }
         }
     }
@@ -385,10 +417,7 @@ private fun DeleteAllItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "Recent",
-            fontSize = 14.sp
-        )
+        Text(text = "Recent", fontSize = 14.sp)
         TextButton(onClick = onClearAll) {
             Text(text = "Clear all")
         }
@@ -401,4 +430,81 @@ private fun DeleteAllPreview() {
     DeleteAllItem(
         onClearAll = {}
     )
+}
+
+@Composable
+private fun SuggestionsScreen(
+    modifier: Modifier = Modifier,
+    onSelectedSuggestion: (String) -> Unit
+) {
+    val lazyState = rememberLazyListState()
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        state = lazyState,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            suggestionsGrouped.forEach { (label, suggest) ->
+                Text(
+                    text = label,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                SuggestionItems(
+                    categories = suggest,
+                    onSelectedSuggestion = onSelectedSuggestion
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestionItems(
+    modifier: Modifier = Modifier,
+    categories: List<String>,
+    onSelectedSuggestion: (String) -> Unit
+) {
+    FlowRow(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        itemVerticalAlignment = Alignment.CenterVertically
+    ) {
+        categories.forEach { item ->
+            SuggestionChip(
+                onClick = { onSelectedSuggestion(item) },
+                label = { Text(text = item) },
+                shape = RoundedCornerShape(20.dp),
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+        }
+    }
+}
+
+private val suggestionsGrouped = mapOf(
+    "Nature" to listOf("nature", "landscape", "mountains", "forest", "ocean", "beach", "desert", "sunset", "sky", "waterfall", "lake", "snow", "flowers", "autumn"),
+    "Animals" to listOf("animals", "dogs", "cats", "birds", "wildlife", "horses", "marine life", "insects"),
+    "City" to listOf("architecture", "city", "street", "skyline", "bridges", "interior design", "buildings", "urban"),
+    "People" to listOf("people", "portrait", "family", "lifestyle", "friends", "wedding", "children", "fashion"),
+    "Food" to listOf("food", "coffee", "fruit", "healthy food", "desserts", "restaurant", "drinks", "cooking"),
+    "Technology" to listOf("technology", "computers", "coding", "workspace", "business", "office", "startup", "mobile"),
+    "Travel" to listOf("travel", "adventure", "road trip", "camping", "hiking", "landmarks", "vacation"),
+    "Sports" to listOf("sports", "fitness", "yoga", "running", "gym", "soccer", "cycling", "surfing"),
+    "Art" to listOf("art", "abstract", "minimal", "patterns", "textures", "illustration", "graffiti", "photography"),
+    "Backgrounds" to listOf("wallpapers", "backgrounds", "black and white", "gradient", "neon", "pastel"),
+    "Other" to listOf("cars", "music", "books", "education", "health", "science", "space", "holidays", "vintage")
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun SuggestionsPreview() {
+    SuggestionsScreen(onSelectedSuggestion = {})
 }
