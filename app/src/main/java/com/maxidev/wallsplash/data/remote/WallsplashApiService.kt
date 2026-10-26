@@ -1,8 +1,8 @@
 package com.maxidev.wallsplash.data.remote
 
-import com.maxidev.wallsplash.data.remote.dto.CollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.CollectionDataDto
 import com.maxidev.wallsplash.data.remote.dto.CollectionPhotosDto
+import com.maxidev.wallsplash.data.remote.dto.CollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.PhotoDetailDto
 import com.maxidev.wallsplash.data.remote.dto.PhotosDto
 import com.maxidev.wallsplash.data.remote.dto.SearchCollectionsDto

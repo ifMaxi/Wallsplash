@@ -2,23 +2,38 @@ package com.maxidev.wallsplash.domain.model
 
 data class PhotoDetail(
     val id: String,
+    val createdAt: String,
+    val updatedAt: String,
     val width: Int,
     val height: Int,
+    val aspectRatio: String,
+    val color: String,
     val blurHash: String,
     val altDescription: String,
-    val likes: Int,
-    val views: Int,
-    val downloads: Int,
+
+    // Url image
     val imageFull: String,
-    val imageRegular: String,
+
+    // User
+    val userId: String,
     val username: String,
     val name: String,
     val userProfileImage: String,
-    val userLink: String,
+
+    // Camera exif
+    val exifMake: String,
+    val exifName: String,
     val exifModel: String,
     val exifExposureTime: String,
     val exifAperture: String,
     val exifFocalLength: String,
-    val exifIso: Int,
+    val exifIso: String,
+
+    // Location
+    val locationName: String,
+    val city: String,
+    val country: String,
+
+    // Tags
     val tags: List<String>
 )

@@ -6,44 +6,43 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PhotoDetailDto(
     val id: String? = "",
+    @SerialName("created_at")
+    val createdAt: String? = "",
+    @SerialName("updated_at")
+    val updatedAt: String? = "",
     val width: Int? = 0,
     val height: Int? = 0,
+    val color: String? = "",
     @SerialName("blur_hash")
     val blurHash: String? = "",
+    val urls: Urls? = Urls(),
     @SerialName("alt_description")
     val altDescription: String? = "",
-    val urls: UrlsDto? = UrlsDto(),
-    val likes: Int? = 0,
-    val views: Int? = 0,
-    val downloads: Int? = 0,
-    val user: UserDto? = UserDto(),
-    val exif: ExifDto? = ExifDto(),
-    val tags: List<TagDto?>? = listOf()
+    val user: User? = User(),
+    val exif: Exif? = Exif(),
+    val location: Location? = Location(),
+    val tags: List<Tag?>? = listOf()
 ) {
     @Serializable
-    data class UrlsDto(
-        val full: String? = "",
-        val regular: String? = "",
-    )
+    data class Urls(val full: String? = "")
 
     @Serializable
-    data class UserDto(
+    data class User(
+        val id: String? = "",
         val username: String? = "",
         val name: String? = "",
-        val links: UserLinksDto? = UserLinksDto(),
         @SerialName("profile_image")
-        val profileImage: ProfileImageDto? = ProfileImageDto()
+        val profileImage: ProfileImage? = ProfileImage(),
     ) {
         @Serializable
-        data class UserLinksDto(val html: String? = "")
-
-        @Serializable
-        data class ProfileImageDto(val large: String? = "")
+        data class ProfileImage(val large: String? = "")
     }
 
     @Serializable
-    data class ExifDto(
+    data class Exif(
+        val make: String? = "",
         val model: String? = "",
+        val name: String? = "",
         @SerialName("exposure_time")
         val exposureTime: String? = "",
         val aperture: String? = "",
@@ -53,5 +52,12 @@ data class PhotoDetailDto(
     )
 
     @Serializable
-    data class TagDto(val title: String? = "")
+    data class Location(
+        val name: String? = "",
+        val city: String? = "",
+        val country: String? = ""
+    )
+
+    @Serializable
+    data class Tag(val title: String? = "")
 }
