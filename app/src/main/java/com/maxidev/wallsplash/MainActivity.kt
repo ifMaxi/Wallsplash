@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -37,6 +38,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.maxidev.wallsplash.presentation.collections.CollectionsScreen
+import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailScreen
+import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailViewModel
 import com.maxidev.wallsplash.presentation.photos.PhotosScreen
 import com.maxidev.wallsplash.presentation.search.SearchScreen
 import com.maxidev.wallsplash.presentation.settings.SettingsScreen
@@ -115,26 +118,34 @@ private fun NavigationGraph() {
             entryProvider = entryProvider {
                 entry<Home> {
                     PhotosScreen(
-                        navigateToDetail = { navBackStack.add(PhotoDetail(it)) },
+                        navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
                         navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
                     )
                 }
                 entry<Collections> {
                     CollectionsScreen(
-                        navigateToCollectionDetail = { navBackStack.add(CollectionDetail(it)) },
+                        navigateToCollectionDetail = { navBackStack.add(DetailCollection(it)) },
                         navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
                     )
                 }
                 entry<Search> {
                     SearchScreen(
-                        navigateToDetail = { navBackStack.add(PhotoDetail(it)) },
+                        navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
                         navigateToCollections = {}
                     )
                 }
                 entry<Settings> {
                     SettingsScreen()
                 }
-                entry<PhotoDetail> {}
+                entry<DetailPhoto> {
+                    val viewModel =
+                        hiltViewModel<PhotoDetailViewModel, PhotoDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(it.id) }
+                        )
+
+                    PhotoDetailScreen(viewModel = viewModel)
+                }
+                entry<DetailCollection> {}
                 entry<UserDetail> {}
             }
         )
@@ -158,8 +169,8 @@ private val topLevelRoutes = listOf(
 @Serializable private data object Collections : NavKey
 @Serializable private data object Search : NavKey
 @Serializable private data object Settings : NavKey
-@Serializable private data class PhotoDetail(val id: String) : NavKey
-@Serializable private data class CollectionDetail(val id: String) : NavKey
+@Serializable private data class DetailPhoto(val id: String) : NavKey
+@Serializable private data class DetailCollection(val id: String) : NavKey
 @Serializable private data class UserDetail(val userId: String) : NavKey
 
 /**
