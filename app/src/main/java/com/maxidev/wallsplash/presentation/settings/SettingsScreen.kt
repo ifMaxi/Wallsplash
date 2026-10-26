@@ -8,9 +8,11 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -20,11 +22,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -109,8 +110,7 @@ private fun ScreenContent(
             modifier = Modifier
                 .fillMaxSize(),
             state = lazyState,
-            contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = innerPadding
         ) {
             item {
                 PreferencesListItem(
@@ -146,10 +146,7 @@ private fun PreferencesListItem(
             content = "Theme",
             trailingContent = {
                 IconButton(onClick = { onVisibility(true) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_circle_right),
-                        contentDescription = "Select theme."
-                    )
+                    Icon(painterResource(R.drawable.arrow_circle_right), "Select theme.")
                 }
             },
             leadingContent = painterResource(R.drawable.palette),
@@ -180,23 +177,18 @@ private fun PreferencesListItem(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)
     ) {
         HeaderTitleItem(title = "Preferences")
-
-        itemList.forEach { item ->
-            ListItem(
+        Spacer(Modifier.height(16.dp))
+        itemList.forEachIndexed { index, item ->
+            SegmentedListItem(
                 colors = ListItemDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
-                elevation = ListItemDefaults.elevation(8.dp),
-                shapes = ListItemDefaults.shapes(RoundedCornerShape(20.dp)),
-                leadingContent = {
-                    Icon(
-                        painter = item.leadingContent,
-                        contentDescription = null
-                    )
-                },
+                elevation = ListItemDefaults.elevation(4.dp),
+                shapes = ListItemDefaults.segmentedShapes(index = index, count = 2),
+                leadingContent = { Icon(item.leadingContent, null) },
                 trailingContent = item.trailingContent,
                 supportingContent = { Text(text = item.supportingContent) },
                 content = { Text(text = item.content) }
@@ -226,30 +218,21 @@ private fun PermissionListItem(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         HeaderTitleItem(title = "Permissions")
-
-        ListItem(
+        SegmentedListItem(
             colors = ListItemDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
-            elevation = ListItemDefaults.elevation(8.dp),
-            shapes = ListItemDefaults.shapes(RoundedCornerShape(20.dp)),
+            elevation = ListItemDefaults.elevation(4.dp),
+            shapes = ListItemDefaults.segmentedShapes(index = 0, count = 1),
             content = { Text(text = "Notifications") },
-            leadingContent = {
-                Icon(
-                    painter = painterResource(R.drawable.notifications),
-                    contentDescription = "Notifications."
-                )
-            },
+            leadingContent = { Icon(painterResource(R.drawable.notifications), "Notifications.") },
             supportingContent = { Text(text = "Turn on/off notifications.") },
             trailingContent = {
                 IconButton(onClick = { context.startActivity(intent) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_circle_right),
-                        contentDescription = "Go to settings."
-                    )
+                    Icon(painterResource(R.drawable.arrow_circle_right), "Go to settings.")
                 }
             }
         )
@@ -273,10 +256,7 @@ private fun AboutListItem(
             leadingContent = painterResource(R.drawable.help),
             trailingContent = {
                 IconButton(onClick = { onProjectVisibility(true) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.live_help),
-                        contentDescription = "About the project."
-                    )
+                    Icon(painterResource(R.drawable.live_help), "About the project.")
                 }
             }
         ),
@@ -286,10 +266,7 @@ private fun AboutListItem(
             leadingContent = painterResource(R.drawable.commit),
             trailingContent = {
                 IconButton(onClick = { context.startActivity(gitHubIntent) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.open_in_new),
-                        contentDescription = "Open GitHub."
-                    )
+                    Icon(painterResource(R.drawable.open_in_new), "Open GitHub.")
                 }
             }
         ),
@@ -299,10 +276,7 @@ private fun AboutListItem(
             leadingContent = painterResource(R.drawable.api),
             trailingContent = {
                 IconButton(onClick = { context.startActivity(unsplashApiIntent) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.open_in_new),
-                        contentDescription = "Go to Unsplash api page."
-                    )
+                    Icon(painterResource(R.drawable.open_in_new), "Go to Unsplash api page.")
                 }
             }
         ),
@@ -312,10 +286,7 @@ private fun AboutListItem(
             leadingContent = painterResource(R.drawable.web),
             trailingContent = {
                 IconButton(onClick = { context.startActivity(unsplashPageIntent) }) {
-                    Icon(
-                        painter = painterResource(R.drawable.open_in_new),
-                        contentDescription = "Go to unsplash official page."
-                    )
+                    Icon(painterResource(R.drawable.open_in_new), "Go to unsplash official page.")
                 }
             }
         )
@@ -325,25 +296,20 @@ private fun AboutListItem(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)
     ) {
         HeaderTitleItem(title = "About")
-
-        itemList.forEach { item ->
-            ListItem(
+        Spacer(Modifier.height(16.dp))
+        itemList.forEachIndexed { index, item ->
+            SegmentedListItem(
                 colors = ListItemDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
-                elevation = ListItemDefaults.elevation(8.dp),
-                shapes = ListItemDefaults.shapes(RoundedCornerShape(20.dp)),
+                elevation = ListItemDefaults.elevation(4.dp),
+                shapes = ListItemDefaults.segmentedShapes(index = index, count = 4),
                 content = { Text(text = item.content) },
                 supportingContent = { Text(text = item.supportingText) },
-                leadingContent = {
-                    Icon(
-                        painter = item.leadingContent,
-                        contentDescription = null
-                    )
-                },
+                leadingContent = { Icon(painter = item.leadingContent, null) },
                 trailingContent = item.trailingContent
             )
         }
@@ -404,6 +370,7 @@ private fun ThemesDialog(
 ) {
     AlertDialog(
         modifier = Modifier.padding(16.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(20.dp),
         onDismissRequest = { onVisibility(false) },
         title = { Text(text = "Select system theme") },
@@ -427,32 +394,28 @@ private fun ChoseThemeRadioButtons(
     updateThemeType: (SettingsType) -> Unit
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)
     ) {
-        state.radioItems.forEach {
-            ListItem(
+        state.radioItems.forEachIndexed { index, item ->
+            SegmentedListItem(
                 modifier = Modifier
                     .selectable(
-                        selected = it.value == state.selectedRadio,
-                        onClick = { updateThemeType(it.value) }
+                        selected = item.value == state.selectedRadio,
+                        onClick = { updateThemeType(item.value) }
                     ),
+                elevation = ListItemDefaults.elevation(4.dp),
+                shapes = ListItemDefaults.segmentedShapes(index = index, count = 3),
                 colors = ListItemDefaults.colors(
-                    containerColor = Color.Transparent
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
-                leadingContent = {
-                    Icon(
-                        painter = painterResource(it.icon),
-                        contentDescription = it.title
-                    )
-                },
+                leadingContent = { Icon(painterResource(item.icon), item.title) },
                 trailingContent = {
                     RadioButton(
-                        selected = (it.value == state.selectedRadio),
-                        onClick = { updateThemeType(it.value) }
+                        selected = (item.value == state.selectedRadio),
+                        onClick = { updateThemeType(item.value) }
                     )
                 },
-                content = { Text(text = it.title) }
+                content = { Text(text = item.title) }
             )
         }
     }
@@ -463,11 +426,7 @@ fun HeaderTitleItem(
     modifier: Modifier = Modifier,
     title: String
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
+    Box(modifier = modifier.fillMaxWidth()) {
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall
