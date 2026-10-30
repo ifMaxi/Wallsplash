@@ -10,7 +10,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,15 +17,11 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -40,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,9 +48,11 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
+import com.maxidev.wallsplash.LocalBottomBarPadding
 import com.maxidev.wallsplash.R
 import com.maxidev.wallsplash.domain.model.Photos
 import com.maxidev.wallsplash.presentation.components.UserItem
+import com.maxidev.wallsplash.presentation.components.plusBottom
 import com.maxidev.wallsplash.utils.handlePagingLoadState
 import com.wajahatiqbal.blurhash.BlurHashPainter
 import kotlinx.coroutines.delay
@@ -88,8 +84,6 @@ private fun ScreenContent(
     val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyState = rememberLazyStaggeredGridState()
-    val topBarState = rememberTopAppBarState()
-    val scrollState = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
         isRefreshing = true
@@ -105,14 +99,7 @@ private fun ScreenContent(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollState.nestedScrollConnection),
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(text = "Wallsplash") },
-                scrollBehavior = scrollState
-            )
-        },
+        containerColor = Color.Transparent,
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showButton,
@@ -145,7 +132,7 @@ private fun ScreenContent(
                     .fillMaxSize(),
                 columns = StaggeredGridCells.Adaptive(260.dp),
                 state = lazyState,
-                contentPadding = innerPadding
+                contentPadding = innerPadding.plusBottom(LocalBottomBarPadding.current)
             ) {
                 items(
                     count = allPhotos.itemCount,
