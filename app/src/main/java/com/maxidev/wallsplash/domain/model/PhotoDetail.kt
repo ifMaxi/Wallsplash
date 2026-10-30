@@ -31,8 +31,6 @@ data class PhotoDetail(
 
     // Location
     val locationName: String,
-    val city: String,
-    val country: String,
 
     // Tags
     val tags: List<String>

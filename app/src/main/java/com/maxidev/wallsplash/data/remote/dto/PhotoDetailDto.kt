@@ -52,11 +52,7 @@ data class PhotoDetailDto(
     )
 
     @Serializable
-    data class Location(
-        val name: String? = "",
-        val city: String? = "",
-        val country: String? = ""
-    )
+    data class Location(val name: String? = "")
 
     @Serializable
     data class Tag(val title: String? = "")

@@ -28,8 +28,6 @@ fun PhotoDetailDto.asDomain() =
             userId = data.user?.id.orEmpty(),
             exifMake = data.exif?.make.orEmpty(),
             exifName = data.exif?.name.orEmpty(),
-            locationName = data.location?.name.orEmpty(),
-            city = data.location?.city.orEmpty(),
-            country = data.location?.country.orEmpty()
+            locationName = data.location?.name.orEmpty()
         )
     }
