@@ -1,5 +1,5 @@
 [versions]
-agp = "9.4.1"
+agp = "9.5.0"
 blurhashpainter = "1.2"
 coilCompose = "3.6.3"
 constraintlayoutCompose = "1.1.2"
