@@ -52,6 +52,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maxidev.wallsplash.R
 import com.maxidev.wallsplash.data.datastore.SettingsType
+import com.maxidev.wallsplash.presentation.components.HeaderTitleItem
 import com.maxidev.wallsplash.utils.Constants.GIT_HUB_PAGE
 import com.maxidev.wallsplash.utils.Constants.UNSPLASH_API_PAGE
 import com.maxidev.wallsplash.utils.Constants.UNSPLASH_OFFICIAL_PAGE
@@ -421,26 +422,7 @@ private fun ChoseThemeRadioButtons(
     }
 }
 
-@Composable
-fun HeaderTitleItem(
-    modifier: Modifier = Modifier,
-    title: String
-) {
-    Box(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall
-        )
-    }
-}
-
 /* Preview composables. */
-
-@Preview(showBackground = true)
-@Composable
-private fun HeaderTitlePreview() {
-    HeaderTitleItem(title = "Lorem impsum")
-}
 
 @Preview(showBackground = true)
 @Composable
