@@ -56,7 +56,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -64,6 +66,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -233,6 +236,15 @@ private fun ImageItem(
         modifier = Modifier
             .aspectRatio(model.width.toFloat() / model.height.toFloat())
             .padding(8.dp)
+            .dropShadow(
+                shape = RoundedCornerShape(20.dp),
+                shadow = Shadow(
+                    radius = 6.dp,
+                    color = Color.Black.copy(alpha = 0.3f),
+                    spread = 2.dp,
+                    offset = DpOffset(2.dp, 2.dp)
+                )
+            )
             .clip(RoundedCornerShape(20.dp))
             .clickable { navigateToDetail() }
     )
@@ -261,7 +273,18 @@ private fun CollectionItem(
             .clickable { navigateToCollectionsDetail() }
     ) {
         AsyncImage(
-            modifier = Modifier.height(200.dp).clip(roundedCornerShape),
+            modifier = Modifier
+                .height(200.dp)
+                .dropShadow(
+                    shape = roundedCornerShape,
+                    shadow = Shadow(
+                        radius = 6.dp,
+                        color = Color.Black.copy(alpha = 0.3f),
+                        spread = 2.dp,
+                        offset = DpOffset(2.dp, 2.dp)
+                    )
+                )
+                .clip(roundedCornerShape),
             model = model.coverPhoto,
             contentDescription = null,
             contentScale = ContentScale.Crop,

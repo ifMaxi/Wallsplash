@@ -19,15 +19,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -39,14 +36,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -91,8 +90,6 @@ private fun ScreenContent(
     val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyState = rememberLazyGridState()
-    val topBarState = rememberTopAppBarState()
-    val scrollState = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
         isRefreshing = true
@@ -108,14 +105,7 @@ private fun ScreenContent(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollState.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0),
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(text = "Collections") },
-                scrollBehavior = scrollState
-            )
-        },
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showButton,
@@ -129,12 +119,7 @@ private fun ScreenContent(
                             onRefresh()
                         }
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_circle_up),
-                        contentDescription = "Go to top."
-                    )
-                }
+                ) { Icon(painterResource(R.drawable.arrow_circle_up), "Go to top.") }
             }
         }
     ) { innerPadding ->
@@ -206,6 +191,15 @@ private fun CollectionItem(
             AsyncImage(
                 modifier = Modifier
                     .height(200.dp)
+                    .dropShadow(
+                        shape = roundedCornerShape,
+                        shadow = Shadow(
+                            radius = 6.dp,
+                            color = Color.Black.copy(alpha = 0.3f),
+                            spread = 2.dp,
+                            offset = DpOffset(2.dp, 2.dp)
+                        )
+                    )
                     .clip(roundedCornerShape),
                 model = model.urlRegular,
                 contentDescription = null,

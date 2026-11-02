@@ -10,6 +10,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,8 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -33,11 +36,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,11 +54,9 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePreviewHandler
 import coil3.compose.LocalAsyncImagePreviewHandler
-import com.maxidev.wallsplash.LocalBottomBarPadding
 import com.maxidev.wallsplash.R
 import com.maxidev.wallsplash.domain.model.Photos
 import com.maxidev.wallsplash.presentation.components.UserItem
-import com.maxidev.wallsplash.presentation.components.plusBottom
 import com.maxidev.wallsplash.utils.handlePagingLoadState
 import com.wajahatiqbal.blurhash.BlurHashPainter
 import kotlinx.coroutines.delay
@@ -84,6 +88,8 @@ private fun ScreenContent(
     val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyState = rememberLazyStaggeredGridState()
+    val topBarState = rememberTopAppBarState()
+    val scrollState = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
         isRefreshing = true
@@ -99,7 +105,7 @@ private fun ScreenContent(
     }
 
     Scaffold(
-        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0),
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showButton,
@@ -132,7 +138,7 @@ private fun ScreenContent(
                     .fillMaxSize(),
                 columns = StaggeredGridCells.Adaptive(260.dp),
                 state = lazyState,
-                contentPadding = innerPadding.plusBottom(LocalBottomBarPadding.current)
+                contentPadding = innerPadding
             ) {
                 items(
                     count = allPhotos.itemCount,
@@ -186,6 +192,15 @@ private fun PhotoItem(
             modifier = Modifier
                 .aspectRatio(model.width.toFloat() / model.height.toFloat())
                 .padding(8.dp)
+                .dropShadow(
+                    shape = RoundedCornerShape(20.dp),
+                    shadow = Shadow(
+                        radius = 6.dp,
+                        color = Color.Black.copy(alpha = 0.3f),
+                        spread = 2.dp,
+                        offset = DpOffset(2.dp, 2.dp)
+                    )
+                )
                 .clip(RoundedCornerShape(20.dp))
                 .clickable { navigateToPhotoDetail() },
             model = model.urlRegular,

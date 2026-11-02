@@ -15,28 +15,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -59,10 +50,10 @@ import kotlinx.serialization.Serializable
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        window.isNavigationBarContrastEnforced = false
+        installSplashScreen()
+        window.isNavigationBarContrastEnforced = true
         setContent {
             WallsplashTheme {
                 RequestPermissions()
@@ -75,8 +66,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-val LocalBottomBarPadding = compositionLocalOf { 0.dp }
-
 @Composable
 private fun NavigationGraph() {
     val navBackStack = rememberNavBackStack(Home)
@@ -84,17 +73,13 @@ private fun NavigationGraph() {
     val showBottomBar = navBackStack.lastOrNull() in topLevelRoutes.map { it.key }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
-        containerColor = Color.Transparent,
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar,
                 enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
             ) {
-                ShortNavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
-                ) {
+                ShortNavigationBar {
                     topLevelRoutes.forEach { topLevelRoute ->
                         ShortNavigationBarItem(
                             selected = currentTab == topLevelRoute.key,
@@ -108,12 +93,7 @@ private fun NavigationGraph() {
                                     navBackStack.add(topLevelRoute.key)
                                 }
                             },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(topLevelRoute.icon),
-                                    contentDescription = null
-                                )
-                            },
+                            icon = { Icon(painterResource(topLevelRoute.icon), null) },
                             label = { Text(text = topLevelRoute.label) }
                         )
                     }
@@ -121,60 +101,50 @@ private fun NavigationGraph() {
             }
         }
     ) { innerPadding ->
-        CompositionLocalProvider(
-            LocalBottomBarPadding provides innerPadding.calculateBottomPadding()
-        ) {
-            NavDisplay(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (showBottomBar) {
-                            Modifier.consumeWindowInsets(
-                                WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
-                            )
-                        } else Modifier
-                    ),
-                backStack = navBackStack,
-                onBack = { navBackStack.removeLastOrNull() },
-                entryDecorators = listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator()
-                ),
-                entryProvider = entryProvider {
-                    entry<Home> {
-                        PhotosScreen(
-                            navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
-                            navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
-                        )
-                    }
-                    entry<Collections> {
-                        CollectionsScreen(
-                            navigateToCollectionDetail = { navBackStack.add(DetailCollection(it)) },
-                            navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
-                        )
-                    }
-                    entry<Search> {
-                        SearchScreen(
-                            navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
-                            navigateToCollections = {}
-                        )
-                    }
-                    entry<Settings> {
-                        SettingsScreen()
-                    }
-                    entry<DetailPhoto> {
-                        val viewModel =
-                            hiltViewModel<PhotoDetailViewModel, PhotoDetailViewModel.Factory>(
-                                creationCallback = { factory -> factory.create(it.id) }
-                            )
-
-                        PhotoDetailScreen(viewModel = viewModel)
-                    }
-                    entry<DetailCollection> {}
-                    entry<UserDetail> {}
+        NavDisplay(
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
+            backStack = navBackStack,
+            onBack = { navBackStack.removeLastOrNull() },
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            ),
+            entryProvider = entryProvider {
+                entry<Home> {
+                    PhotosScreen(
+                        navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
+                        navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
+                    )
                 }
-            )
-        }
+                entry<Collections> {
+                    CollectionsScreen(
+                        navigateToCollectionDetail = { navBackStack.add(DetailCollection(it)) },
+                        navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
+                    )
+                }
+                entry<Search> {
+                    SearchScreen(
+                        navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
+                        navigateToCollections = {}
+                    )
+                }
+                entry<Settings> {
+                    SettingsScreen()
+                }
+                entry<DetailPhoto> {
+                    val viewModel =
+                        hiltViewModel<PhotoDetailViewModel, PhotoDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(it.id) }
+                        )
+
+                    PhotoDetailScreen(viewModel = viewModel)
+                }
+                entry<DetailCollection> {}
+                entry<UserDetail> {}
+            }
+        )
     }
 }
 

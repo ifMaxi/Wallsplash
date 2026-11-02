@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItemDefaults
@@ -30,8 +29,6 @@ import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -40,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -94,19 +90,8 @@ private fun ScreenContent(
     updateDynamicTheme: (Boolean) -> Unit
 ) {
     val lazyState = rememberLazyListState()
-    val topBarState = rememberTopAppBarState()
-    val scrollState = TopAppBarDefaults.enterAlwaysScrollBehavior(topBarState)
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollState.nestedScrollConnection),
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(text = "Settings") },
-                scrollBehavior = scrollState
-            )
-        }
-    ) { innerPadding ->
+    Scaffold(contentWindowInsets = WindowInsets(0)) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
