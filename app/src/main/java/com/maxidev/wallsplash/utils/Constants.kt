@@ -23,6 +23,9 @@ object Constants {
     const val COLLECTIONS = "collections"
     const val COLLECTION_ID = "collections/{id}"
     const val COLLECTION_ID_PHOTOS = "collections/{id}/photos"
+    const val TOPICS = "topics"
+    const val TOPICS_ID = "topics/:id_or_slug"
+    const val TOPIC_ID_PHOTOS = "topics/:id_or_slug/photos"
 
     // Paging related constants
     const val PAGE_NUMBER = 1
@@ -35,7 +38,6 @@ object Constants {
     const val DATABASE_NAME = "wallsplash_database"
     const val PHOTOS_TABLE = "photos_table"
     const val COLLECTIONS_TABLE = "collections_table"
-    const val FAVORITE_TABLE = "favorite_table"
 
     // Intent related constants
     const val GIT_HUB_PAGE = "https://github.com/ifMaxi"
