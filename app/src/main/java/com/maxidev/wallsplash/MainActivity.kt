@@ -40,10 +40,13 @@ import androidx.navigation3.ui.NavDisplay
 import com.maxidev.wallsplash.presentation.collections.CollectionsScreen
 import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailScreen
 import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailViewModel
+import com.maxidev.wallsplash.presentation.detail.topic.TopicDetailScreen
+import com.maxidev.wallsplash.presentation.detail.topic.TopicDetailViewModel
 import com.maxidev.wallsplash.presentation.photos.PhotosScreen
 import com.maxidev.wallsplash.presentation.search.SearchScreen
 import com.maxidev.wallsplash.presentation.settings.SettingsScreen
 import com.maxidev.wallsplash.presentation.theme.WallsplashTheme
+import com.maxidev.wallsplash.presentation.topics.TopicsScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
 
@@ -68,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun NavigationGraph() {
-    val navBackStack = rememberNavBackStack(Home)
+    val navBackStack = rememberNavBackStack(HomeView)
     val currentTab = navBackStack.firstOrNull()
     val showBottomBar = navBackStack.lastOrNull() in topLevelRoutes.map { it.key }
 
@@ -87,7 +90,7 @@ private fun NavigationGraph() {
                                 if (currentTab != topLevelRoute.key) {
                                     navBackStack.clear()
 
-                                    if (topLevelRoute.key != Home) navBackStack.add(
+                                    if (topLevelRoute.key != HomeView) navBackStack.add(
                                         topLevelRoute.key
                                     )
                                     navBackStack.add(topLevelRoute.key)
@@ -112,7 +115,7 @@ private fun NavigationGraph() {
                 rememberViewModelStoreNavEntryDecorator()
             ),
             entryProvider = entryProvider {
-                entry<Home> {
+                entry<HomeView> {
                     PhotosScreen(
                         navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
                         navigateToUserDetail = { navBackStack.add(UserDetail(it)) }
@@ -130,6 +133,11 @@ private fun NavigationGraph() {
                         navigateToCollections = {}
                     )
                 }
+                entry<Topics> {
+                    TopicsScreen(
+                        navigateToTopicDetail = { navBackStack.add(TopicDetail(it)) }
+                    )
+                }
                 entry<Settings> {
                     SettingsScreen()
                 }
@@ -140,6 +148,14 @@ private fun NavigationGraph() {
                         )
 
                     PhotoDetailScreen(viewModel = viewModel)
+                }
+                entry<TopicDetail> {
+                    val viewModel =
+                        hiltViewModel<TopicDetailViewModel, TopicDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(it.id) }
+                        )
+
+                    TopicDetailScreen(viewModel = viewModel)
                 }
                 entry<DetailCollection> {}
                 entry<UserDetail> {}
@@ -155,18 +171,21 @@ private data class TopLevelRoute(
 )
 
 private val topLevelRoutes = listOf(
-    TopLevelRoute(key = Home, icon = R.drawable.home_app, label = "Home"),
+    TopLevelRoute(key = Settings, icon = R.drawable.settings, label = "Settings"),
+    TopLevelRoute(key = Topics, icon = R.drawable.topic, label = "Topics"),
+    TopLevelRoute(key = HomeView, icon = R.drawable.home_app, label = "Home"),
     TopLevelRoute(key = Collections, icon = R.drawable.box, label = "Collections"),
-    TopLevelRoute(key = Search, icon = R.drawable.search, label = "Search"),
-    TopLevelRoute(key = Settings, icon = R.drawable.settings, label = "Setting")
+    TopLevelRoute(key = Search, icon = R.drawable.search, label = "Search")
 )
 
-@Serializable private data object Home : NavKey
+@Serializable private data object HomeView : NavKey
 @Serializable private data object Collections : NavKey
 @Serializable private data object Search : NavKey
 @Serializable private data object Settings : NavKey
+@Serializable private data object Topics : NavKey
 @Serializable private data class DetailPhoto(val id: String) : NavKey
 @Serializable private data class DetailCollection(val id: String) : NavKey
+@Serializable private data class TopicDetail(val id: String) : NavKey
 @Serializable private data class UserDetail(val userId: String) : NavKey
 
 /**
