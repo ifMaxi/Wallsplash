@@ -23,9 +23,6 @@ object Constants {
     const val COLLECTIONS = "collections"
     const val COLLECTION_ID = "collections/{id}"
     const val COLLECTION_ID_PHOTOS = "collections/{id}/photos"
-    const val TOPICS = "topics"
-    const val TOPICS_ID = "topics/{id_or_slug}"
-    const val TOPIC_ID_PHOTOS = "topics/{id_or_slug}/photos"
 
     // Paging related constants
     const val PAGE_NUMBER = 1

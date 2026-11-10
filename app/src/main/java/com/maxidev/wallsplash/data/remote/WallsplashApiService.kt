@@ -7,7 +7,15 @@ import com.maxidev.wallsplash.data.remote.dto.PhotoDetailDto
 import com.maxidev.wallsplash.data.remote.dto.PhotosDto
 import com.maxidev.wallsplash.data.remote.dto.SearchCollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.SearchPhotosDto
-import com.maxidev.wallsplash.utils.Constants
+import com.maxidev.wallsplash.utils.Constants.COLLECTIONS
+import com.maxidev.wallsplash.utils.Constants.COLLECTION_ID
+import com.maxidev.wallsplash.utils.Constants.COLLECTION_ID_PHOTOS
+import com.maxidev.wallsplash.utils.Constants.PAGE_NUMBER
+import com.maxidev.wallsplash.utils.Constants.PER_PAGE
+import com.maxidev.wallsplash.utils.Constants.PHOTOS
+import com.maxidev.wallsplash.utils.Constants.PHOTO_ID
+import com.maxidev.wallsplash.utils.Constants.SEARCH_COLLECTIONS
+import com.maxidev.wallsplash.utils.Constants.SEARCH_PHOTOS
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -20,10 +28,10 @@ interface WallsplashApiService {
      * @param page Page number to retrieve. (Optional; default: 1)
      * @param perPage Number of items per page. (Optional; default: 10)
      */
-    @GET(Constants.PHOTOS)
+    @GET(PHOTOS)
     suspend fun getPhotos(
-        @Query("page") page: Int? = Constants.PAGE_NUMBER,
-        @Query("per_page") perPage: Int? = Constants.PER_PAGE
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE
     ): List<PhotosDto>
 
     /**
@@ -31,7 +39,7 @@ interface WallsplashApiService {
      *
      * @param id The photo ID in string format. (Required)
      */
-    @GET(Constants.PHOTO_ID)
+    @GET(PHOTO_ID)
     suspend fun getPhotoId(@Path("id") id: String): PhotoDetailDto
 
     /**
@@ -43,13 +51,13 @@ interface WallsplashApiService {
      * @param page Number to retrieve. (Optional; default: 1)
      * @param perPage Number of items per page. (Optional; default: 10)
      */
-    @GET(Constants.SEARCH_PHOTOS)
+    @GET(SEARCH_PHOTOS)
     suspend fun getSearchPhotos(
         @Query("query") query: String,
         @Query("order_by") orderBy: String? = "relevant",
         @Query("content_filter") contentFilter: String? = "low",
-        @Query("page") page: Int? = Constants.PAGE_NUMBER,
-        @Query("per_page") perPage: Int? = Constants.PER_PAGE
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE
     ): SearchPhotosDto
 
     /**
@@ -59,11 +67,11 @@ interface WallsplashApiService {
      * @param page Number to retrieve. (Optional; default: 1)
      * @param perPage Number of items per page. (Optional; default: 10)
      */
-    @GET(Constants.SEARCH_COLLECTIONS)
+    @GET(SEARCH_COLLECTIONS)
     suspend fun getSearchCollections(
         @Query("query") query: String,
-        @Query("page") page: Int? = Constants.PAGE_NUMBER,
-        @Query("per_page") perPage: Int? = Constants.PER_PAGE
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE
     ): SearchCollectionsDto
 
     /**
@@ -72,10 +80,10 @@ interface WallsplashApiService {
      * @param page Number to retrieve. (Optional; default: 1)
      * @param perPage Number of items per page. (Optional; default: 10)
      */
-    @GET(Constants.COLLECTIONS)
+    @GET(COLLECTIONS)
     suspend fun getCollections(
-        @Query("page") page: Int? = Constants.PAGE_NUMBER,
-        @Query("per_page") perPage: Int? = Constants.PER_PAGE
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE
     ): List<CollectionsDto>
 
     /**
@@ -83,7 +91,7 @@ interface WallsplashApiService {
      *
      * @param id The collection ID in Int format. (Required)
      */
-    @GET(Constants.COLLECTION_ID)
+    @GET(COLLECTION_ID)
     suspend fun getCollectionId(@Path("id") id: String): CollectionDataDto
 
     /**
@@ -93,10 +101,10 @@ interface WallsplashApiService {
      * @param page Page number to retrieve. (Optional; default: 1)
      * @param perPage Number of items per page. (Optional; default: 10)
      */
-    @GET(Constants.COLLECTION_ID_PHOTOS)
+    @GET(COLLECTION_ID_PHOTOS)
     suspend fun getCollectionPhotosById(
         @Path("id") id: String,
-        @Query("page") page: Int? = Constants.PAGE_NUMBER,
-        @Query("per_page") perPage: Int? = Constants.PER_PAGE
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE
     ): List<CollectionPhotosDto>
 }

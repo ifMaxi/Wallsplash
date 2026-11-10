@@ -4,12 +4,10 @@ import com.maxidev.wallsplash.data.repository.CollectionsRepositoryImpl
 import com.maxidev.wallsplash.data.repository.DetailRepositoryImpl
 import com.maxidev.wallsplash.data.repository.PhotosRepositoryImpl
 import com.maxidev.wallsplash.data.repository.SearchRepositoryImpl
-import com.maxidev.wallsplash.data.repository.TopicsRepositoryImpl
 import com.maxidev.wallsplash.domain.repository.CollectionsRepository
 import com.maxidev.wallsplash.domain.repository.DetailRepository
 import com.maxidev.wallsplash.domain.repository.PhotosRepository
 import com.maxidev.wallsplash.domain.repository.SearchRepository
-import com.maxidev.wallsplash.domain.repository.TopicsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -34,9 +32,4 @@ abstract class RepositoryModule {
     abstract fun bindPhotoDetailRepository(
         impl: DetailRepositoryImpl
     ): DetailRepository
-
-    @Binds
-    abstract fun bindTopicRepository(
-        impl: TopicsRepositoryImpl
-    ): TopicsRepository
 }
