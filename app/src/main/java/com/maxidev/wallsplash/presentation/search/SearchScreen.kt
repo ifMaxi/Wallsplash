@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -133,7 +135,7 @@ private fun ScreenContent(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             Column(
-                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+                modifier = Modifier.fillMaxWidth().statusBarsPadding(),
                 verticalArrangement = Arrangement.Center
             ) {
                 SearchBarItem(
@@ -158,10 +160,12 @@ private fun ScreenContent(
         }
     ) { innerPadding ->
         LazyVerticalStaggeredGrid(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
             columns = StaggeredGridCells.Adaptive(160.dp),
-            state = currentState,
-            contentPadding = innerPadding
+            state = currentState
         ) {
             when (selectedTabIndex) {
                 0 -> {

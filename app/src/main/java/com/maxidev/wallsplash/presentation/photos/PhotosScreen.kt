@@ -10,7 +10,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -105,7 +104,6 @@ private fun ScreenContent(
     }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showButton,
@@ -134,8 +132,7 @@ private fun ScreenContent(
             state = pullToRefreshState
         ) {
             LazyVerticalStaggeredGrid(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 columns = StaggeredGridCells.Adaptive(260.dp),
                 state = lazyState,
                 contentPadding = innerPadding

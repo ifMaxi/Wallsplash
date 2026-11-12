@@ -15,8 +15,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShortNavigationBar
@@ -25,7 +24,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
@@ -38,6 +36,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.maxidev.wallsplash.presentation.collections.CollectionsScreen
+import com.maxidev.wallsplash.presentation.detail.collection.CollectionDetailScreen
+import com.maxidev.wallsplash.presentation.detail.collection.CollectionDetailViewModel
 import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailScreen
 import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailViewModel
 import com.maxidev.wallsplash.presentation.photos.PhotosScreen
@@ -73,6 +73,7 @@ private fun NavigationGraph() {
     val showBottomBar = navBackStack.lastOrNull() in topLevelRoutes.map { it.key }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar,
@@ -100,11 +101,8 @@ private fun NavigationGraph() {
                 }
             }
         }
-    ) { innerPadding ->
+    ) { _ ->
         NavDisplay(
-            modifier = Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
             backStack = navBackStack,
             onBack = { navBackStack.removeLastOrNull() },
             entryDecorators = listOf(
@@ -127,7 +125,7 @@ private fun NavigationGraph() {
                 entry<Search> {
                     SearchScreen(
                         navigateToDetail = { navBackStack.add(DetailPhoto(it)) },
-                        navigateToCollections = {}
+                        navigateToCollections = { navBackStack.add(DetailCollection(it)) }
                     )
                 }
                 entry<Settings> {
@@ -141,7 +139,17 @@ private fun NavigationGraph() {
 
                     PhotoDetailScreen(viewModel = viewModel)
                 }
-                entry<DetailCollection> {}
+                entry<DetailCollection> {
+                    val viewModel =
+                        hiltViewModel<CollectionDetailViewModel, CollectionDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(it.id)}
+                        )
+
+                    CollectionDetailScreen(
+                        viewModel = viewModel,
+                        navigateToDetail = { id -> navBackStack.add(DetailPhoto(id)) }
+                    )
+                }
                 entry<UserDetail> {}
             }
         )
