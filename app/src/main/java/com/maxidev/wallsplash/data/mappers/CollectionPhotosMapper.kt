@@ -9,7 +9,7 @@ fun CollectionDataDto.asDomain() =
     this.let { data ->
         CollectionData(
             title = data.title.orEmpty(),
-            totalPhotos = data.totalPhotos ?: 0,
+            totalPhotos = "Total photos: ${data.totalPhotos ?: 0}",
             link = data.links?.html.orEmpty(),
             name = data.user?.name.orEmpty()
         )
