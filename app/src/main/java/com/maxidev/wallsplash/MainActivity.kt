@@ -40,6 +40,8 @@ import com.maxidev.wallsplash.presentation.detail.collection.CollectionDetailScr
 import com.maxidev.wallsplash.presentation.detail.collection.CollectionDetailViewModel
 import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailScreen
 import com.maxidev.wallsplash.presentation.detail.photo.PhotoDetailViewModel
+import com.maxidev.wallsplash.presentation.detail.users.UserScreen
+import com.maxidev.wallsplash.presentation.detail.users.UserViewModel
 import com.maxidev.wallsplash.presentation.photos.PhotosScreen
 import com.maxidev.wallsplash.presentation.search.SearchScreen
 import com.maxidev.wallsplash.presentation.settings.SettingsScreen
@@ -150,7 +152,14 @@ private fun NavigationGraph() {
                         navigateToDetail = { id -> navBackStack.add(DetailPhoto(id)) }
                     )
                 }
-                entry<UserDetail> {}
+                entry<UserDetail> {
+                    val viewModel =
+                        hiltViewModel<UserViewModel, UserViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(it.userId) }
+                        )
+
+                    UserScreen(viewModel = viewModel)
+                }
             }
         )
     }
