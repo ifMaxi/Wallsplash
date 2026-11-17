@@ -7,6 +7,7 @@ import com.maxidev.wallsplash.data.remote.dto.PhotoDetailDto
 import com.maxidev.wallsplash.data.remote.dto.PhotosDto
 import com.maxidev.wallsplash.data.remote.dto.SearchCollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.SearchPhotosDto
+import com.maxidev.wallsplash.data.remote.dto.UserDto
 import com.maxidev.wallsplash.utils.Constants.COLLECTIONS
 import com.maxidev.wallsplash.utils.Constants.COLLECTION_ID
 import com.maxidev.wallsplash.utils.Constants.COLLECTION_ID_PHOTOS
@@ -16,6 +17,9 @@ import com.maxidev.wallsplash.utils.Constants.PHOTOS
 import com.maxidev.wallsplash.utils.Constants.PHOTO_ID
 import com.maxidev.wallsplash.utils.Constants.SEARCH_COLLECTIONS
 import com.maxidev.wallsplash.utils.Constants.SEARCH_PHOTOS
+import com.maxidev.wallsplash.utils.Constants.USER_COLLECTIONS
+import com.maxidev.wallsplash.utils.Constants.USER_ID
+import com.maxidev.wallsplash.utils.Constants.USER_PHOTOS
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -107,4 +111,22 @@ interface WallsplashApiService {
         @Query("page") page: Int? = PAGE_NUMBER,
         @Query("per_page") perPage: Int? = PER_PAGE
     ): List<CollectionPhotosDto>
+
+    @GET(USER_ID)
+    suspend fun getUserId(@Path("username") username: String): UserDto
+
+    @GET(USER_PHOTOS)
+    suspend fun getUserPhotos(
+        @Path("username") username: String,
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE
+    )
+
+    @GET(USER_COLLECTIONS)
+    suspend fun getUserCollections(
+        @Path("username") username: String,
+        @Query("page") page: Int? = PAGE_NUMBER,
+        @Query("per_page") perPage: Int? = PER_PAGE,
+        @Query("order_by") orderBy: String? = "latest"
+    )
 }
