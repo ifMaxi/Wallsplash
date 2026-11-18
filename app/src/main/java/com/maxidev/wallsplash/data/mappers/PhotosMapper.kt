@@ -13,7 +13,7 @@ fun PhotosDto.asEntity() =
             blurHash = data.blurHash.orEmpty(),
             urlFull = data.urls?.full.orEmpty(),
             urlRegular = data.urls?.regular.orEmpty(),
-            userId = data.user?.id.orEmpty(),
+            userId = data.user?.username.orEmpty(),
             name = data.user?.name.orEmpty(),
             profileImageLarge = data.user?.profileImage?.large.orEmpty()
         )

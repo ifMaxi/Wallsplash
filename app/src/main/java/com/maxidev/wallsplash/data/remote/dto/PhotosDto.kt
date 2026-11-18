@@ -15,7 +15,7 @@ data class PhotosDto(
 ) {
     @Serializable
     data class User(
-        val id: String? = "",
+        val username: String? = "",
         val name: String? = "",
         @SerialName("profile_image")
         val profileImage: ProfileImage? = ProfileImage()
