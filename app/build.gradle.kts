@@ -11,7 +11,7 @@ android {
 
     namespace = buildName
     compileSdk {
-        version = release(37)
+        version = preview("37.1")
     }
 
     defaultConfig {
@@ -77,7 +77,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.ui.text.google.fonts)
-    implementation(libs.androidx.constraintlayout.compose)
 
     // Material 3
     implementation(libs.androidx.material.icons.extended)
