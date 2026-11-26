@@ -7,7 +7,9 @@ import com.maxidev.wallsplash.data.remote.dto.PhotoDetailDto
 import com.maxidev.wallsplash.data.remote.dto.PhotosDto
 import com.maxidev.wallsplash.data.remote.dto.SearchCollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.SearchPhotosDto
+import com.maxidev.wallsplash.data.remote.dto.UserCollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.UserDto
+import com.maxidev.wallsplash.data.remote.dto.UserPhotosDto
 import com.maxidev.wallsplash.utils.Constants.COLLECTIONS
 import com.maxidev.wallsplash.utils.Constants.COLLECTION_ID
 import com.maxidev.wallsplash.utils.Constants.COLLECTION_ID_PHOTOS
@@ -120,7 +122,7 @@ interface WallsplashApiService {
         @Path("username") username: String,
         @Query("page") page: Int? = PAGE_NUMBER,
         @Query("per_page") perPage: Int? = PER_PAGE
-    )
+    ): List<UserPhotosDto>
 
     @GET(USER_COLLECTIONS)
     suspend fun getUserCollections(
@@ -128,5 +130,5 @@ interface WallsplashApiService {
         @Query("page") page: Int? = PAGE_NUMBER,
         @Query("per_page") perPage: Int? = PER_PAGE,
         @Query("order_by") orderBy: String? = "latest"
-    )
+    ): List<UserCollectionsDto>
 }

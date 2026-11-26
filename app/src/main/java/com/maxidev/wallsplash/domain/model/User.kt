@@ -1,5 +1,7 @@
 package com.maxidev.wallsplash.domain.model
 
+import java.util.UUID
+
 data class User(
     val name: String,
     val bio: String,
@@ -22,3 +24,23 @@ data class User(
     )
     data class Tags(val tag: List<String>)
 }
+
+data class UserPhoto(
+    val photoId: UUID = UUID.randomUUID(),
+    val id: String,
+    val width: Int,
+    val height: Int,
+    val blurHash: String,
+    val urlRegular: String
+)
+
+data class UserCollections(
+    val collectionId: UUID = UUID.randomUUID(),
+    val id: String,
+    val title: String,
+    val totalPhotos: String,
+    val width: Int,
+    val height: Int,
+    val blurHash: String,
+    val coverPhoto: String
+)

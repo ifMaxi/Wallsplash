@@ -1,7 +1,11 @@
 package com.maxidev.wallsplash.data.mappers
 
+import com.maxidev.wallsplash.data.remote.dto.UserCollectionsDto
 import com.maxidev.wallsplash.data.remote.dto.UserDto
+import com.maxidev.wallsplash.data.remote.dto.UserPhotosDto
 import com.maxidev.wallsplash.domain.model.User
+import com.maxidev.wallsplash.domain.model.UserCollections
+import com.maxidev.wallsplash.domain.model.UserPhoto
 
 fun UserDto.asDomain() =
     this.let { data ->
@@ -29,5 +33,29 @@ fun UserDto.asDomain() =
                     tag = it?.map { tag -> tag?.title.orEmpty() }.orEmpty()
                 )
             }
+        )
+    }
+
+fun UserPhotosDto.asDomain() =
+    this.let { data ->
+        UserPhoto(
+            id = data.id.orEmpty(),
+            width = data.width ?: 0,
+            height = data.height ?: 0,
+            blurHash = data.blurHash.orEmpty(),
+            urlRegular = data.urls?.regular.orEmpty()
+        )
+    }
+
+fun UserCollectionsDto.asDomain() =
+    this.let { data ->
+        UserCollections(
+            id = data.id.orEmpty(),
+            title = data.title.orEmpty(),
+            totalPhotos = "${data.totalPhotos}",
+            width = data.coverPhoto?.width ?: 0,
+            height = data.coverPhoto?.height ?: 0,
+            blurHash = data.coverPhoto?.blurHash.orEmpty(),
+            coverPhoto = data.coverPhoto?.urls?.regular.orEmpty()
         )
     }
