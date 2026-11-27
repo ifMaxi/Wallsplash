@@ -32,7 +32,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
-import androidx.compose.material3.ElevatedSuggestionChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
@@ -88,18 +86,24 @@ import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun UserScreen(
-    viewModel: UserViewModel
+    viewModel: UserViewModel,
+    navigateToDetail: (String) -> Unit,
+    navigateToCollectionsDetail: (String) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LoadStateScreen(
-        uiState = state
+        uiState = state,
+        navigateToDetail = navigateToDetail,
+        navigateToCollectionsDetail = navigateToCollectionsDetail
     )
 }
 
 @Composable
 private fun LoadStateScreen(
-    uiState: UserUiState
+    uiState: UserUiState,
+    navigateToDetail: (String) -> Unit,
+    navigateToCollectionsDetail: (String) -> Unit
 ) {
     when {
         uiState.isLoading -> {}
@@ -108,7 +112,9 @@ private fun LoadStateScreen(
             ScreenContent(
                 user = uiState.user ?: return,
                 photos = uiState.userPhotos,
-                collections = uiState.userCollections
+                collections = uiState.userCollections,
+                navigateToDetail = navigateToDetail,
+                navigateToCollectionsDetail = navigateToCollectionsDetail
             )
         }
     }
@@ -118,7 +124,9 @@ private fun LoadStateScreen(
 private fun ScreenContent(
     user: User,
     photos: Flow<PagingData<UserPhoto>>,
-    collections: Flow<PagingData<UserCollections>>
+    collections: Flow<PagingData<UserCollections>>,
+    navigateToDetail: (String) -> Unit,
+    navigateToCollectionsDetail: (String) -> Unit
 ) {
     val photos = photos.collectAsLazyPagingItems()
     val collections = collections.collectAsLazyPagingItems()
@@ -151,15 +159,12 @@ private fun ScreenContent(
                 )
             }
             item(span = StaggeredGridItemSpan.FullLine) {
-                InterestItem(
-                    tags = user.tags.tag,
-                    onNavigateToResult = {}
-                )
+                InterestItem(tags = user.tags.tag)
             }
             item(span = StaggeredGridItemSpan.FullLine) {
                 FeaturedPhotos(
                     featured = user.photos,
-                    onNavigateToDetail = {}
+                    onNavigateToDetail = navigateToDetail
                 )
             }
             item(key = "tabs", span = StaggeredGridItemSpan.FullLine) {
@@ -168,9 +173,7 @@ private fun ScreenContent(
                         Tab(
                             selected = tab == selectedTabIndex,
                             text = { Text(text = tab.name) },
-                            onClick = {
-                                selectedTabIndex = tab
-                            }
+                            onClick = { selectedTabIndex = tab }
                         )
                     }
                 }
@@ -185,7 +188,7 @@ private fun ScreenContent(
                         photos[index]?.let {
                             ImageItem(
                                 model = it,
-                                navigateToDetail = {}
+                                navigateToDetail = { navigateToDetail(it.id) }
                             )
                         }
                     }
@@ -198,7 +201,7 @@ private fun ScreenContent(
                         collections[index]?.let {
                             CollectionItem(
                                 model = it,
-                                navigateToCollectionsDetail = {}
+                                navigateToCollectionsDetail = { navigateToCollectionsDetail(it.id) }
                             )
                         }
                     }
@@ -208,9 +211,8 @@ private fun ScreenContent(
     }
 }
 
-enum class Tabs(label: String) {
-    PHOTOS(label = "Photos"),
-    COLLECTIONS(label = "Collections")
+enum class Tabs {
+    PHOTOS, COLLECTIONS
 }
 
 @Composable
@@ -406,10 +408,7 @@ private fun Context.openLink(
 }
 
 @Composable
-private fun InterestItem(
-    tags: List<String>,
-    onNavigateToResult: () -> Unit
-) {
+private fun InterestItem(tags: List<String>) {
     if (tags.isNotEmpty()) {
         Column(
             modifier = Modifier
@@ -428,17 +427,7 @@ private fun InterestItem(
                 }
             ) {
                 tags.forEach { item ->
-                    ElevatedSuggestionChip(
-                        onClick = onNavigateToResult,
-                        label = {
-                            Text(text = item)
-                        },
-                        shape = RoundedCornerShape(20.dp),
-                        elevation = SuggestionChipDefaults.elevatedSuggestionChipElevation(4.dp),
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    )
+                    Text(text = item)
                 }
             }
         }
@@ -613,8 +602,5 @@ private fun InterestPreview() {
     val list = listOf("Art", "Photographer", "Minimal", "Abstract", "Monochrome",
         "Vivid", "Sun")
 
-    InterestItem(
-        tags = list,
-        onNavigateToResult = {}
-    )
+    InterestItem(tags = list)
 }

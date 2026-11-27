@@ -158,7 +158,13 @@ private fun NavigationGraph() {
                             creationCallback = { factory -> factory.create(it.userId) }
                         )
 
-                    UserScreen(viewModel = viewModel)
+                    UserScreen(
+                        viewModel = viewModel,
+                        navigateToDetail = { id -> navBackStack.add(DetailPhoto(id)) },
+                        navigateToCollectionsDetail = { id ->
+                            navBackStack.add(DetailCollection(id))
+                        }
+                    )
                 }
             }
         )
